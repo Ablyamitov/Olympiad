@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/OlimpDB
+    username: postgres
+    password: 12345678
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: always
+      continue-on-error: false
+      #data-locations: classpath:demo_data.sql
+
+security:
+  jwt:
+    secret: YXNkYXNkYXNkYXNmc2RmbXNhZGtvaGZpb3NkdWpmb2RzamZrZGZqT0lBREZKRElPU0pGRElPU0pG
+    access: 3600000
+    refresh: 2592000000
+
+
