@@ -42,9 +42,5 @@ public class AuthServiceImpl implements AuthService {
         return null;
     }
 
-    @Override
-    public JwtResponse refresh(final String refreshToken) {
 
-        return jwtTokenProvider.refreshUserTokens(refreshToken);
-    }
 }

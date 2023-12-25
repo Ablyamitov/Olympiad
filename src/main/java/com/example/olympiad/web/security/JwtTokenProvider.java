@@ -62,34 +62,9 @@ public class JwtTokenProvider {
                 .collect(Collectors.toList());
     }
 
-    public String createRefreshToken(Long userId, String username){
-        Claims claims = Jwts.claims().setSubject(username);
-        claims.put("id",userId);
-        Date now = new Date();
-        Date validity = new Date(now.getTime()+jwtProperties.getRefresh());
-        return  Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(key)
-                .compact();
 
-    }
 
-    public JwtResponse refreshUserTokens(String refreshToken) {
-        JwtResponse jwtResponse = new JwtResponse();
-        if (!validateToken(refreshToken)){
-            throw new AccessDeniedException();
-        }
-        Long userId = Long.valueOf(getId(refreshToken));
-        User user = userService.getById(userId);
-        jwtResponse.setId(userId);
-        jwtResponse.setUsername(user.getUsername());
-        jwtResponse.setSession(user.getSession());
-        //jwtResponse.setAccessToken(createAccessToken(userId,user.getUsername(),user.getRoles()));
-        //jwtResponse.setRefreshToken(createRefreshToken(userId,user.getUsername()));
-        return jwtResponse;
-    }
+
 
     private String getId(String token) {    //достаем id с токена
         return Jwts
@@ -102,7 +77,7 @@ public class JwtTokenProvider {
                 .toString();
     }
 
-    boolean validateToken(String token) {   //достаём дату
+    public boolean validateToken(String token) {   //достаём дату
         Jws<Claims> claims = Jwts
                 .parserBuilder()
                 .setSigningKey(key)
@@ -121,7 +96,7 @@ public class JwtTokenProvider {
 
     }
 
-    private String getUsername(String token) {
+    public String getUsername(String token) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(key)

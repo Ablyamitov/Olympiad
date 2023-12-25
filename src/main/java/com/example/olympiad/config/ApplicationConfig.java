@@ -31,8 +31,9 @@ import java.util.List;
 @EnableWebSecurity
 @RequiredArgsConstructor(onConstructor = @__(@Lazy))
 public class ApplicationConfig {
-    private final ApplicationContext applicationContext;
     private final JwtTokenProvider tokenProvider;
+
+
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -76,14 +77,6 @@ public class ApplicationConfig {
         return httpSecurity.build();
 
     }
-    /*@Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // разрешить все домены
-        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }*/
+
 
 }

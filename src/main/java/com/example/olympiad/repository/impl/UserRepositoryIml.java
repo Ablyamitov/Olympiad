@@ -7,6 +7,7 @@ import com.example.olympiad.repository.DataSourceConfig;
 import com.example.olympiad.repository.UserRepository;
 import com.example.olympiad.repository.mappers.UserRowMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -157,3 +158,12 @@ public class UserRepositoryIml implements UserRepository {
         }
     }
 }
+
+/*
+@Repository
+public interface UserRepositoryIml implements JpaRepository<Long,User> {
+
+    User findById();
+    User findByUsername();
+}
+*/
