@@ -85,8 +85,9 @@ public class JwtTokenProvider {
         User user = userService.getById(userId);
         jwtResponse.setId(userId);
         jwtResponse.setUsername(user.getUsername());
-        jwtResponse.setAccessToken(createAccessToken(userId,user.getUsername(),user.getRoles()));
-        jwtResponse.setRefreshToken(createRefreshToken(userId,user.getUsername()));
+        jwtResponse.setSession(user.getSession());
+        //jwtResponse.setAccessToken(createAccessToken(userId,user.getUsername(),user.getRoles()));
+        //jwtResponse.setRefreshToken(createRefreshToken(userId,user.getUsername()));
         return jwtResponse;
     }
 

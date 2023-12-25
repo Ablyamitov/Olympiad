@@ -26,6 +26,7 @@ public class UserRepositoryIml implements UserRepository {
                 u.name as user_name,
                 u.username as user_username,
                 u.password as user_password,
+                u.session as user_session,
                 ur.role as user_role_role
             FROM users u
                 LEFT JOIN users_roles ur on u.id = ur.user_id
@@ -36,6 +37,7 @@ public class UserRepositoryIml implements UserRepository {
                 u.name as user_name,
                 u.username as user_username,
                 u.password as user_password,
+                u.session as user_session,
                 ur.role as user_role_role
             FROM users u
                 LEFT JOIN users_roles ur on u.id = ur.user_id
@@ -49,7 +51,7 @@ public class UserRepositoryIml implements UserRepository {
             WHERE id = ?""";
 
     private final String CREATE = """
-            INSERT INTO users (name, username, password)
+            INSERT INTO users (name, username, password, session)
             VALUES (?,?,?)""";
 
     private final String INSERT_USER_ROLE = """
@@ -100,7 +102,10 @@ public class UserRepositoryIml implements UserRepository {
             statement.setString(1,user.getName());
             statement.setString(2,user.getUsername());
             statement.setString(3,user.getPassword());
-            statement.setLong(4,user.getId());
+
+            statement.setLong(4,user.getSession());
+
+            statement.setLong(5,user.getId());
         }catch (SQLException throwables){
             throw new ResourceMappingException("Exception while updating user.");
         }
@@ -114,6 +119,7 @@ public class UserRepositoryIml implements UserRepository {
             statement.setString(1,user.getName());
             statement.setString(2,user.getUsername());
             statement.setString(3,user.getPassword());
+            statement.setLong(3,user.getSession());
             statement.executeUpdate();
             try (ResultSet rs = statement.getGeneratedKeys()){
                 rs.next();

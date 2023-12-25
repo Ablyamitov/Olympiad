@@ -59,9 +59,9 @@ public class UserServiceImpl implements UserService {
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.create(user);
-        Set<Role> roles = Set.of(Role.ROLE_USER);
+        Set<Role> roles = Set.of(Role.ROLE_PARTICIPANT);
         user.setRoles(roles);
-        userRepository.insertUserRole(user.getId(),Role.ROLE_USER);
+        userRepository.insertUserRole(user.getId(),Role.ROLE_PARTICIPANT);
         return user;
     }
 

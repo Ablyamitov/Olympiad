@@ -23,6 +23,7 @@ public class UserRowMapper {
             user.setName(resultSet.getString("user_name"));
             user.setUsername(resultSet.getString("user_username"));
             user.setPassword(resultSet.getString("user_password"));
+            user.setSession(resultSet.getLong("user_session"));
             user.setRoles(roles);
             return user;
 

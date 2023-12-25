@@ -3,7 +3,8 @@ create table if not exists users
     id bigserial primary key,
     name varchar(255) not null,
     username varchar(255) not null unique,
-    password varchar(255) not null
+    password varchar(255) not null,
+    session bigint not null
 );
 
 create table if not exists users_roles
