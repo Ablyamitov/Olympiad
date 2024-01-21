@@ -1,6 +1,5 @@
 package com.example.olympiad.service.impl;
 
-import com.example.olympiad.domain.exception.ResourceMappingException;
 import com.example.olympiad.domain.exception.ResourceNotFoundException;
 import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.domain.user.User;
@@ -11,9 +10,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Set;
 
 @Service
@@ -21,6 +17,7 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
     @Override
     @Transactional(readOnly = true)
     public User getById(final Long id) {
@@ -42,7 +39,7 @@ public class UserServiceImpl implements UserService {
     public User update(final User user) {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.update(user);
+        userRepository.save(user);
         return user;
     }
 
@@ -52,16 +49,16 @@ public class UserServiceImpl implements UserService {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             throw new IllegalStateException("User already exists.");
         }
-        if (!user.getPassword().equals(user.getPasswordConfirmation())) {
+        /*if (!user.getPassword().equals(user.getPasswordConfirmation())) {
             throw new IllegalStateException(
                     "Password and password confirmation do not match."
             );
-        }
+        }*/
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.create(user);
         Set<Role> roles = Set.of(Role.ROLE_PARTICIPANT);
         user.setRoles(roles);
-        userRepository.insertUserRole(user.getId(),Role.ROLE_PARTICIPANT);
+        userRepository.save(user);
+
         return user;
     }
 
@@ -82,6 +79,6 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void delete(final Long id) {
-        userRepository.delete(id);
+        userRepository.deleteById(id);
     }
 }

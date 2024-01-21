@@ -1,3 +1,4 @@
+
 insert into users (name,username,password,session)
 values ('Aboba', 'asd@gmail.com', '$2a$10$3jRAtonCE7HN4dZ1tkXCS.guptFexNuKOGhJJfMxqNsYKFgyy5Isi', 1),
        ('Sasha', 'sasha@gmail.com', '$2a$10$3vHu.kJmu0WzjcdWzs5FvueSr0QQ5mi/K7SmEFFXLkSxqQyshrfOC', 1),

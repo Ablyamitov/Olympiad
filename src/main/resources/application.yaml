@@ -8,11 +8,11 @@ spring:
 #    properties:
 #      hibernate:
 #        dialect: org.hibernate.dialect.PostgreSQLDialect
-  sql:
-    init:
-      mode: always
-      continue-on-error: false
-      #data-locations: classpath:demo_data.sql
+
+  liquibase:
+    change-log: classpath:liquibase/db.changelog.yaml
+    enabled: true
+    default-schema: public
 
 security:
   jwt:

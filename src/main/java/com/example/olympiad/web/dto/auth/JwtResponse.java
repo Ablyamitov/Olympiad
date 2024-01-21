@@ -8,7 +8,7 @@ public class JwtResponse {
     private String username;
     private Long session;
     private String Role;
-    //private String accessToken;
+    private String accessToken;
     //private String refreshToken;
 
 }

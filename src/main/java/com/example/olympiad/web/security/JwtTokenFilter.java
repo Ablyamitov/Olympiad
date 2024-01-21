@@ -5,6 +5,8 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,13 +21,15 @@ public class JwtTokenFilter extends GenericFilterBean {
 
     private final JwtTokenProvider jwtTokenProvider;
 
+
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        /*String bearerToken = ((HttpServletRequest)servletRequest).getHeader("Authorization");
-        if (bearerToken!=null && bearerToken.startsWith("Bearer ") ){
+        String bearerToken = ((HttpServletRequest)servletRequest).getHeader("Authorization");
+        if (bearerToken!=null && bearerToken.startsWith("Bearer ")){
             bearerToken = bearerToken.substring(7);
         }
-        if (bearerToken!=null && jwtTokenProvider.validateToken(bearerToken)){
+        if (bearerToken!=null && !bearerToken.equals("null") && jwtTokenProvider.validateToken(bearerToken)){
             try{    //если токен валидный, получаем аутентификацию
                 Authentication authentication = jwtTokenProvider.getAuthentication(bearerToken);
                 if(authentication!=null){   //пользователь аутентифицирован
@@ -34,9 +38,9 @@ public class JwtTokenFilter extends GenericFilterBean {
             }catch (ResourceNotFoundException ignored){}
 
         }
-        filterChain.doFilter(servletRequest,servletResponse);*/
+        filterChain.doFilter(servletRequest,servletResponse);
 
-        Cookie[] cookies = ((HttpServletRequest) servletRequest).getCookies();
+        /*Cookie[] cookies = ((HttpServletRequest) servletRequest).getCookies();
         String accessToken = null;
         if (cookies!=null){
 
@@ -54,7 +58,7 @@ public class JwtTokenFilter extends GenericFilterBean {
             }catch (ResourceNotFoundException ignored){}
 
         }
-        filterChain.doFilter(servletRequest,servletResponse);
+        filterChain.doFilter(servletRequest,servletResponse);*/
 
 
 

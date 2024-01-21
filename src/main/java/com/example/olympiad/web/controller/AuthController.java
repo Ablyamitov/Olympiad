@@ -15,11 +15,14 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -38,10 +41,35 @@ public class AuthController {
 
     @GetMapping("/checkAuth")
     public JwtResponse checkAuth(HttpServletRequest servletRequest) {
+        JwtResponse jwtResponse = new JwtResponse();
 
+        String bearerToken = ((HttpServletRequest)servletRequest).getHeader("Authorization");
+        if (bearerToken!=null && bearerToken.startsWith("Bearer ") ){
+            bearerToken = bearerToken.substring(7);
+        }
+        if (bearerToken!=null && jwtTokenProvider.validateToken(bearerToken)){
+            try {
+                String username = jwtTokenProvider.getUsername(bearerToken);
+                User user = userService.getByUsername(username);
+                jwtResponse.setId(user.getId());
+                jwtResponse.setUsername(user.getUsername());
+                jwtResponse.setSession(user.getSession());
+                jwtResponse.setRole(user.getRoles().stream()
+                        .map(Role::name)
+                        .collect(Collectors.joining(", ")));
+
+                jwtResponse.setAccessToken(bearerToken);
+            } catch (ResourceNotFoundException ignored) {}
+
+        }
+
+
+
+
+        /*JwtResponse jwtResponse = new JwtResponse();
         Cookie[] cookies = servletRequest.getCookies();
         String accessToken = null;
-        JwtResponse jwtResponse = new JwtResponse();
+
         if (cookies != null) {
             accessToken = Arrays.stream(cookies)
                     .filter(cookie -> cookie.getName().equals("access"))
@@ -59,10 +87,9 @@ public class AuthController {
                         .map(Role::name)
                         .collect(Collectors.joining(", ")));
             } catch (ResourceNotFoundException ignored) {}
-        }
+        }*/
         return jwtResponse;
     }
-
 
     @PostMapping("/login")
     public JwtResponse login(@Validated
@@ -80,18 +107,46 @@ public class AuthController {
         jwtResponse.setRole(user.getRoles().stream()
                 .map(Role::name)
                 .collect(Collectors.joining(", ")));
-        Cookie cookie = new Cookie("access",
-                jwtTokenProvider.createAccessToken(
+
+
+        jwtResponse.setAccessToken(jwtTokenProvider.createAccessToken(
+                user.getId(), user.getUsername(), user.getRoles())
+        );
+
+
+//        Cookie cookie = new Cookie("access",
+//                jwtTokenProvider.createAccessToken(
+//                        user.getId(),
+//                        user.getUsername(),
+//                        user.getRoles()));
+//        cookie.setHttpOnly(true);
+//        cookie.setSecure(false);
+//        cookie.setMaxAge(3600);
+//        cookie.setPath("/");
+//        response.addCookie(cookie);
+
+
+        /*ResponseCookie cookie = ResponseCookie.from("access", jwtTokenProvider.createAccessToken(
                         user.getId(),
                         user.getUsername(),
-                        user.getRoles()));
-        cookie.setHttpOnly(true);
+                        user.getRoles())) // key & value
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(3600)
+                .build();
 
-        //cookie.setSecure(true);
-        response.addCookie(cookie);
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());*/
+
+
+
+
         //return authService.login(loginRequest);
         return jwtResponse;
     }
+
+
 
 
 

@@ -1,17 +1,12 @@
 package com.example.olympiad.repository;
 
-import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.domain.user.User;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
-public interface UserRepository {
-    Optional<User> findById(Long id);
+
+public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
 
-    void update(User user);
-    void create(User user);
-    void insertUserRole(Long userId, Role role);
-    void delete(Long id);
 }
