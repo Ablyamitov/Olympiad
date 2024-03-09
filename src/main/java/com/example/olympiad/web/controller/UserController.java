@@ -67,21 +67,15 @@ public class UserController {
     }
 
 
-    @GetMapping("/ContestTime/{session}")
+    /*@GetMapping("/ContestTime/{session}")
     public DeferredResult<ResponseEntity<GetStartAndEndContestTimeResponse>> getContestTime(@PathVariable Long session) {
-        /*DeferredResult<ResponseEntity<GetStartAndEndContestTimeResponse>> output = new DeferredResult<>();
-        requests.add(output);
-
-        output.onCompletion(() -> requests.remove(output));*/
 
         DeferredResult<ResponseEntity<GetStartAndEndContestTimeResponse>> output = new DeferredResult<>(60000L);
 
-        // Запускаем новый поток, который будет проверять, началась ли олимпиада
         new Thread(() -> {
             while (!output.hasResult()) {
                 Contest contest = contestService.getContestBySession(session);
                 if (contest.getStartTime() != null) {
-                    // Олимпиада началась, устанавливаем результат и выходим из цикла
                     GetStartAndEndContestTimeResponse response = new GetStartAndEndContestTimeResponse();
                     response.setStartTime(contest.getStartTime());
                     response.setEndTime(contest.getEndTime());
@@ -90,7 +84,7 @@ public class UserController {
                 }
 
                 try {
-                    Thread.sleep(1000); // ждем 1 секунду перед следующей проверкой
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     throw new RuntimeException("Error: " + e.getMessage());
                 }
@@ -101,6 +95,17 @@ public class UserController {
                 ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body("Request timeout occurred.")));
 
         return output;
+
+    }*/
+
+
+    @GetMapping("/contest/{session}")
+    public ResponseEntity<Contest> getContestBySession(@PathVariable Long session) throws InterruptedException {
+        try {
+            return ResponseEntity.ok(contestService.getContestOptionalBySession(session));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(null);
+        }
 
     }
 

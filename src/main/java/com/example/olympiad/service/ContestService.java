@@ -12,8 +12,11 @@ import com.example.olympiad.web.dto.contest.CreateContest.ContestResponse;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.CreatedFile;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,6 +37,17 @@ public class ContestService {
     private final TasksRepository tasksRepository;
 
     private final UserService userService;
+
+
+
+
+    @Retryable(retryFor = EntityNotFoundException.class, maxAttempts = 11, backoff = @Backoff(delay = 5000))
+    public Contest getContestOptionalBySession(Long session) {
+        return contestRepository.findBySession(session)
+                .orElseThrow(() -> new EntityNotFoundException("Contest does not exist."));
+    }
+
+
 
 
     @Transactional
