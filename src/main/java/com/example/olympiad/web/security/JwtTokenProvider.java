@@ -1,22 +1,16 @@
 package com.example.olympiad.web.security;
 
-import com.example.olympiad.domain.exception.AccessDeniedException;
 import com.example.olympiad.domain.user.Role;
-import com.example.olympiad.domain.user.User;
 import com.example.olympiad.service.UserService;
 import com.example.olympiad.service.props.JwtProperties;
-import com.example.olympiad.web.dto.auth.JwtResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -77,12 +71,23 @@ public class JwtTokenProvider {
                 .toString();
     }
 
-    public boolean validateToken(String token) {   //достаём дату
-        Jws<Claims> claims = Jwts
-                .parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token);
+    public boolean validateToken(String token) {
+        Jws<Claims> claims;
+        try {
+            //Jws<Claims> claims = Jwts
+            claims = Jwts
+                    .parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
+
+
+            //достаём дату
+        }
+        catch (Exception e){
+            //System.out.println("Ошибка");
+            return false;
+        }
         return !claims.getBody().getExpiration().before(new Date());
     }
 

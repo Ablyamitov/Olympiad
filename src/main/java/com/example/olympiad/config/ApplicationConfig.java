@@ -57,12 +57,15 @@ public class ApplicationConfig {
                 }))
                 .and()
                 .authorizeHttpRequests()
+
                 .requestMatchers("/api/v1/auth/**").permitAll()
+
                 .anyRequest().authenticated()
                 .and()
 
 
                 .anonymous().disable()
+
                 .addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class)
                 .addFilterBefore(new JwtTokenFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();

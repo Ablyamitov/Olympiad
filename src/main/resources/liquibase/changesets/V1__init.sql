@@ -3,8 +3,10 @@ create table if not exists users
     id bigserial primary key,
     name varchar(255) not null,
     username varchar(255) not null unique,
+    email varchar(255) not null unique,
     password varchar(255) not null,
     session bigint not null
+
     );
 
 create table if not exists users_roles
@@ -14,3 +16,30 @@ create table if not exists users_roles
     primary key (user_id,role),
     constraint fk_users_roles_users foreign key (user_id) references users (id) on delete cascade on update no action
     );
+
+
+--Contest
+create table if not exists contest
+(
+    id bigserial primary key,
+    session bigint unique not null,
+    name varchar(255) not null,
+    participant_count int not null,
+    judge_count int not null,
+    username_prefix varchar(255) not null,
+    duration bigint not null,
+    start_time timestamp,
+    end_time timestamp
+    );
+
+--Tasks
+create table if not exists tasks
+(
+    id bigserial primary key,
+    session bigint not null,
+    task text not null,
+    points int not null,
+    constraint fk_tasks_contest foreign key (session) references contest (session) on delete cascade on update no action
+);
+
+
