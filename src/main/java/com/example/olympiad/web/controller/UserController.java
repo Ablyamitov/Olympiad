@@ -37,21 +37,21 @@ public class UserController {
         return userMapper.toDto(updatedUser);
     }
 
-    @PostMapping("/createParticipant")
-    public List<User> createParticipant(){
-        List<User> users = new ArrayList<>();
-        IntStream.range(0, 20)
-                .mapToObj(i -> {
-                    User user = new User();
-                    user.setSession(1L);
-                    user.setName("Ivan" + i);
-                    user.setUsername("Ivan" + i);
-                    user.setPassword("12345");
-                    return userService.create(user);
-                })
-                .forEach(users::add);
-        return users;
-    }
+//    @PostMapping("/createParticipant")
+//    public List<User> createParticipant(){
+//        List<User> users = new ArrayList<>();
+//        IntStream.range(0, 20)
+//                .mapToObj(i -> {
+//                    User user = new User();
+//                    user.setSession(1L);
+//                    user.setName("Ivan" + i);
+//                    user.setUsername("Ivan" + i);
+//                    user.setPassword("12345");
+//                    return userService.create(user);
+//                })
+//                .forEach(users::add);
+//        return users;
+//    }
 
 
     @GetMapping("/{id}")
