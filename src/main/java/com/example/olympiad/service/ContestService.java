@@ -2,6 +2,7 @@ package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.Tasks;
+import com.example.olympiad.domain.exception.ContestNotStartedExeption;
 import com.example.olympiad.domain.exception.ResourceNotFoundException;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,10 +43,16 @@ public class ContestService {
 
 
 
-    @Retryable(retryFor = EntityNotFoundException.class, maxAttempts = 11, backoff = @Backoff(delay = 5000))
+    @Retryable(retryFor = ContestNotStartedExeption.class,
+            maxAttempts = 11,
+            backoff = @Backoff(delay = 5000))
     public Contest getContestOptionalBySession(Long session) {
-        return contestRepository.findBySession(session)
+        Contest contest = contestRepository.findBySession(session)
                 .orElseThrow(() -> new EntityNotFoundException("Contest does not exist."));
+
+        if (contest.getStartTime() != null) return contest;
+        else throw new ContestNotStartedExeption("Contest haven't started yet");
+
     }
 
 
