@@ -1,7 +1,7 @@
 package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.Contest;
-import com.example.olympiad.domain.exception.ResourceNotFoundException;
+import com.example.olympiad.domain.exception.entity.UserNotFoundException;
 import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.UserRepository;
@@ -23,29 +23,14 @@ public class UserService {
     private static final String CHAR_UPPER = CHAR_LOWER.toUpperCase();
     private static final String NUMBER = "0123456789";
     private static final String DATA_FOR_RANDOM_STRING = CHAR_LOWER + CHAR_UPPER + NUMBER;
-    private static SecureRandom random = new SecureRandom();
+    private static final SecureRandom random = new SecureRandom();
 
-    @Transactional(readOnly = true)
-    public User getById(final Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found."));
-    }
 
     @Transactional(readOnly = true)
     public User getByUsername(final String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("User not found."));
-    }
-
-
-    @Transactional
-    public User update(final User user) {
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return user;
+                        new UserNotFoundException("User not found."));
     }
 
 
@@ -63,11 +48,6 @@ public class UserService {
     }
 
 
-
-    @Transactional
-    public void delete(final Long id) {
-        userRepository.deleteById(id);
-    }
 
 
     @Transactional

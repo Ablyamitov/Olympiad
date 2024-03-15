@@ -1,9 +1,8 @@
 package com.example.olympiad.web.controller;
 
-import com.example.olympiad.domain.exception.ResourceNotFoundException;
+import com.example.olympiad.domain.exception.entity.UserNotFoundException;
 import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.domain.user.User;
-import com.example.olympiad.service.AuthService;
 import com.example.olympiad.service.UserService;
 import com.example.olympiad.web.dto.auth.JwtRequest;
 import com.example.olympiad.web.dto.auth.JwtResponse;
@@ -11,9 +10,15 @@ import com.example.olympiad.web.dto.user.UserDto;
 import com.example.olympiad.web.dto.validation.OnCreate;
 import com.example.olympiad.web.mappers.UserMapper;
 import com.example.olympiad.web.security.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.api.ErrorMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,12 +28,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.stream.Collectors;
 
+@Tag(name = "Auth controller", description = "Authenticate management")
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Validated
 public class AuthController {
-    private final AuthService authService;
     private final UserService userService;
 
     private final UserMapper userMapper;
@@ -36,15 +41,21 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
 
+    @Operation(summary = "Check authenticate", description = "Check and return an authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "403", description = "Access denied",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
     @GetMapping("/checkAuth")
     public ResponseEntity<JwtResponse> checkAuth(HttpServletRequest servletRequest) {
         JwtResponse jwtResponse = new JwtResponse();
 
-        String bearerToken = ((HttpServletRequest)servletRequest).getHeader("Authorization");
-        if (bearerToken!=null && bearerToken.startsWith("Bearer ") ){
+        String bearerToken = servletRequest.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             bearerToken = bearerToken.substring(7);
         }
-        if (bearerToken!=null && jwtTokenProvider.validateToken(bearerToken)){
+        if (bearerToken != null && jwtTokenProvider.validateToken(bearerToken)) {
             try {
                 String username = jwtTokenProvider.getUsername(bearerToken);
                 User user = userService.getByUsername(username);
@@ -56,22 +67,27 @@ public class AuthController {
                         .collect(Collectors.joining(", ")));
 
                 jwtResponse.setAccessToken(bearerToken);
-            } catch (ResourceNotFoundException ignored) {
+            } catch (UserNotFoundException ignored) {
 
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
 
 
-        }
-        else {
+        } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
         return ResponseEntity.ok(jwtResponse);
     }
 
+    @Operation(summary = "Login user", description = "Return an authenticated user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "403", description = "Access denied",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
     @PostMapping("/login")
     public JwtResponse login(@Validated
-                             @RequestBody final JwtRequest loginRequest, HttpServletResponse response) {
+                             @RequestBody final JwtRequest loginRequest) {
 
         JwtResponse jwtResponse = new JwtResponse();
         authenticationManager.authenticate(
@@ -93,9 +109,6 @@ public class AuthController {
 
         return jwtResponse;
     }
-
-
-
 
 
     @PostMapping("/register")

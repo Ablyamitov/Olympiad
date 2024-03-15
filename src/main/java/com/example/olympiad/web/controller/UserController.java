@@ -1,74 +1,44 @@
 package com.example.olympiad.web.controller;
 
 import com.example.olympiad.domain.contest.Contest;
+import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
 import com.example.olympiad.service.ContestService;
-import com.example.olympiad.service.UserService;
-import com.example.olympiad.web.mappers.UserMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springdoc.api.ErrorMessage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "User controller", description = "User management ")
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @Validated
 public class UserController {
-    private final UserService userService;
     private final ContestService contestService;
 
-    private final UserMapper userMapper;
 
-
-    @DeleteMapping("/{id}")
-
-    public void deleteById(@PathVariable Long id) {
-        userService.delete(id);
-    }
-
-
-    /*@GetMapping("/ContestTime/{session}")
-    public DeferredResult<ResponseEntity<GetStartAndEndContestTimeResponse>> getContestTime(@PathVariable Long session) {
-
-        DeferredResult<ResponseEntity<GetStartAndEndContestTimeResponse>> output = new DeferredResult<>(60000L);
-
-        new Thread(() -> {
-            while (!output.hasResult()) {
-                Contest contest = contestService.getContestBySession(session);
-                if (contest.getStartTime() != null) {
-                    GetStartAndEndContestTimeResponse response = new GetStartAndEndContestTimeResponse();
-                    response.setStartTime(contest.getStartTime());
-                    response.setEndTime(contest.getEndTime());
-                    output.setResult(ResponseEntity.ok(response));
-                    break;
-                }
-
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException("Error: " + e.getMessage());
-                }
-            }
-        }).start();
-
-        output.onTimeout(() -> output.setErrorResult(
-                ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body("Request timeout occurred.")));
-
-        return output;
-
-    }*/
-
-
+    @Operation(summary = "Get started contest", description = "Returns a started contest for judge or participant")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "504", description = "Gateway timeout - Contest not started",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
     @GetMapping("/contest/{session}")
-    public ResponseEntity<Contest> getContestBySession(@PathVariable Long session) throws InterruptedException {
+    public ResponseEntity<Contest> getContestBySession(@PathVariable Long session) {
         try {
             return ResponseEntity.ok(contestService.getContestOptionalBySession(session));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).body(null);
+        } catch (ContestNotStartedException e) {
+            throw new ContestNotStartedException("Contest not started");
         }
-
     }
-
-
 }

@@ -2,8 +2,8 @@ package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.Tasks;
-import com.example.olympiad.domain.exception.ContestNotStartedExeption;
-import com.example.olympiad.domain.exception.ResourceNotFoundException;
+import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
+import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.TasksRepository;
@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,7 +41,7 @@ public class ContestService {
 
 
 
-    @Retryable(retryFor = ContestNotStartedExeption.class,
+    @Retryable(retryFor = ContestNotStartedException.class,
             maxAttempts = 11,
             backoff = @Backoff(delay = 5000))
     public Contest getContestOptionalBySession(Long session) {
@@ -51,7 +49,7 @@ public class ContestService {
                 .orElseThrow(() -> new EntityNotFoundException("Contest does not exist."));
 
         if (contest.getStartTime() != null) return contest;
-        else throw new ContestNotStartedExeption("Contest haven't started yet");
+        else throw new ContestNotStartedException("Contest haven't started yet");
 
     }
 
@@ -153,7 +151,7 @@ public class ContestService {
     public GetStartAndEndContestTimeResponse start(final Long contestSession) {
         Contest contest = contestRepository.findBySession(contestSession)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Contest not found."));
+                        new ContestNotFoundException("Contest not found."));
         Instant startTime = Instant.now(); // Текущее время
         Instant endTime = startTime.plus(Duration.ofSeconds(contest.getDuration()));
         contest.setStartTime(startTime);

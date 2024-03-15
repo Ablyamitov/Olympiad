@@ -1,20 +1,14 @@
 package com.example.olympiad.web.security;
 
-import com.example.olympiad.domain.exception.ResourceNotFoundException;
+import com.example.olympiad.domain.exception.entity.UserNotFoundException;
 import jakarta.servlet.*;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 @AllArgsConstructor
 public class JwtTokenFilter extends GenericFilterBean {
@@ -35,7 +29,7 @@ public class JwtTokenFilter extends GenericFilterBean {
                 if(authentication!=null){   //пользователь аутентифицирован
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
-            }catch (ResourceNotFoundException ignored){}
+            }catch (UserNotFoundException ignored){}
 
         }
         filterChain.doFilter(servletRequest,servletResponse);
