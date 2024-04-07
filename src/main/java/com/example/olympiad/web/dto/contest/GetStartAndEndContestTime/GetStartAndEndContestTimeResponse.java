@@ -3,9 +3,10 @@ package com.example.olympiad.web.dto.contest.GetStartAndEndContestTime;
 import lombok.Data;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 
 @Data
 public class GetStartAndEndContestTimeResponse {
-    Instant startTime;
-    Instant endTime;
+    ZonedDateTime startTime;
+    ZonedDateTime endTime;
 }

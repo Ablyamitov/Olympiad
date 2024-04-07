@@ -53,7 +53,6 @@ public class AdminController {
             ContestAndFileResponse response = new ContestAndFileResponse();
             response.setContest(contestResponse.getContest());
 
-            //response.getContest().getTasks().size();
 
             response.setFileContent(fileContent);
 

@@ -8,6 +8,7 @@ import lombok.ToString;
 import org.hibernate.annotations.Type;
 
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Entity
@@ -39,10 +40,10 @@ public class Contest {
     private Long duration;
 
     @Column(name = "start_time")
-    private Instant startTime;
+    private ZonedDateTime startTime;
 
     @Column(name = "end_time")
-    private Instant endTime;
+    private ZonedDateTime endTime;
 
     //@OneToMany(mappedBy = "contest", cascade = CascadeType.ALL)
     @OneToMany(mappedBy = "contest", fetch = FetchType.EAGER)

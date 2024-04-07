@@ -25,6 +25,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -152,8 +154,9 @@ public class ContestService {
         Contest contest = contestRepository.findBySession(contestSession)
                 .orElseThrow(() ->
                         new ContestNotFoundException("Contest not found."));
-        Instant startTime = Instant.now(); // Текущее время
-        Instant endTime = startTime.plus(Duration.ofSeconds(contest.getDuration()));
+        ZonedDateTime startTime = ZonedDateTime.now(ZoneId.of("UTC+3")); // Текущее время
+
+        ZonedDateTime endTime = startTime.plus(Duration.ofSeconds(contest.getDuration()));
         contest.setStartTime(startTime);
         contest.setEndTime(endTime);
         contestRepository.save(contest);
