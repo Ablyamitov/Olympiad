@@ -9,6 +9,22 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
       enabled: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: enverablyamitov2003@gmail.com
+    password: dgyn rwti vemw wovy
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+
 
 
   #  jpa:

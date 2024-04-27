@@ -4,10 +4,13 @@ import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
 import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
+import com.example.olympiad.domain.mail.EmailDetails;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.TasksRepository;
+import com.example.olympiad.service.mail.EmailService;
 import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
+import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestResponse;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
@@ -24,7 +27,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -39,8 +41,9 @@ public class ContestService {
     private final TasksRepository tasksRepository;
 
     private final UserService userService;
+    private final EmailService emailService;
 
-
+    private final String toAddress = "enverablyamitov2003@gmail.com";
 
 
     @Retryable(retryFor = ContestNotStartedException.class,
@@ -56,18 +59,23 @@ public class ContestService {
     }
 
 
-
-
     @Transactional
-    public ContestResponse create(final ContestRequest contestRequest){
+    public ContestResponse create(final ContestRequest contestRequest) {
 
-        if (contestRepository.findBySession(contestRequest.getSession()).isPresent()) {
+        /*if (contestRepository.findBySession(contestRequest.getSession()).isPresent()) {
             throw new IllegalStateException("Contest already exists.");
-        }
+        }*/
+
         ContestResponse contestResponse = new ContestResponse();
 
         Contest contest = new Contest();
-        contest.setSession(contestRequest.getSession());
+
+        long maxSession;
+        if (contestRepository.findContestWithMaxSession().isPresent())
+            maxSession = contestRepository.findContestWithMaxSession().get().getSession() + 1;
+        else
+            maxSession = 1L;
+        contest.setSession(maxSession);
         contest.setName(contestRequest.getName());
         contest.setParticipantCount(contestRequest.getParticipantCount());
         contest.setJudgeCount(contestRequest.getJudgeCount());
@@ -95,7 +103,6 @@ public class ContestService {
         contestRepository.save(contest);
 
 
-
         File file = createFile(contest, participants, judges);
 
         contestResponse.setContest(contest);
@@ -112,11 +119,11 @@ public class ContestService {
         Contest contest = contestRepository.findBySession(createUsersRequest.getSession())
                 .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
 
-        Map<User, String> participants = userService.createParticipants(createUsersRequest.getParticipantCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(),contest.getParticipantCount());
-        Map<User, String> judges = userService.createJudges(createUsersRequest.getJudgeCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(),contest.getJudgeCount());
+        Map<User, String> participants = userService.createParticipants(createUsersRequest.getParticipantCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getParticipantCount());
+        Map<User, String> judges = userService.createJudges(createUsersRequest.getJudgeCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getJudgeCount());
 
-        contest.setParticipantCount(contest.getParticipantCount()+ createUsersRequest.getParticipantCount());
-        contest.setJudgeCount(contest.getJudgeCount()+ createUsersRequest.getJudgeCount());
+        contest.setParticipantCount(contest.getParticipantCount() + createUsersRequest.getParticipantCount());
+        contest.setJudgeCount(contest.getJudgeCount() + createUsersRequest.getJudgeCount());
         contestRepository.save(contest);
 
         File file = createFile(contest, participants, judges);
@@ -131,18 +138,34 @@ public class ContestService {
             File file = new File("contest_info.txt");
             FileWriter writer = new FileWriter(file);
 
+
+            StringBuilder body = new StringBuilder();
+
+
             // Записываем информацию об участниках и жюри в файл
             writer.write("Информация об олимпиаде: " + contest.getName() + "\n");
+            String subject = "Информация об олимпиаде: " + contest.getName();
             writer.write("Участники: \n");
+            body.append("Участники: \n");
             for (Map.Entry<User, String> entry : participants.entrySet()) {
                 writer.write("Username: " + entry.getKey().getUsername() + ", Password: " + entry.getValue() + "\n");
+                body.append("Username: ").append(entry.getKey().getUsername()).append(", Password: ").append(entry.getValue()).append("\n");
             }
             writer.write("Жюри: \n");
             for (Map.Entry<User, String> entry : judges.entrySet()) {
                 writer.write("Username: " + entry.getKey().getUsername() + ", Password: " + entry.getValue() + "\n");
+                body.append("Username: ").append(entry.getKey().getUsername()).append(", Password: ").append(entry.getValue()).append("\n");
             }
 
             writer.close();
+
+            EmailDetails emailDetails = new EmailDetails();
+            emailDetails.setToAddress(toAddress);
+            emailDetails.setSubject(subject);
+            emailDetails.setBody(String.valueOf(body));
+
+            emailService.sendSimpleMail(emailDetails);
+
             return file;
         } catch (IOException e) {
             System.err.println("Ошибка с файлом");
@@ -192,4 +215,12 @@ public class ContestService {
     }
 
 
+    @Transactional
+    public Contest changeDuration(ChangeDurationRequest changeDurationRequest) {
+        Contest contest = contestRepository.findBySession(changeDurationRequest.getSession())
+                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+        contest.setDuration(changeDurationRequest.getNewDuration());
+        contestRepository.save(contest);
+        return contest;
+    }
 }

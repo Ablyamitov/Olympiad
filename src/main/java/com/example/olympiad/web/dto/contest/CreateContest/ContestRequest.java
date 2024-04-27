@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class ContestRequest {
 
-    private Long session;
+    //private Long session;
 
     private String name;
 

@@ -2,6 +2,7 @@ package com.example.olympiad.web.controller;
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
+import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestResponse;
@@ -119,6 +120,19 @@ public class AdminController {
         return ResponseEntity.ok(contestService
                 .start(getStartAndEndContestTimeRequest.getSession()));
     }
+
+    @Operation(summary = "Change duration", description = "Change contest duration")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
+    @PostMapping("/changeDuration")
+    public ResponseEntity<Contest> changeDuration(@RequestBody final ChangeDurationRequest changeDurationRequest) {
+        return ResponseEntity.ok(contestService
+                .changeDuration(changeDurationRequest));
+    }
+
 
     @Operation(summary = "Delete contest", description = "Return created users")
     @ApiResponses(value = {

@@ -9,12 +9,14 @@ import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -67,19 +69,35 @@ public class TaskService {
                 Files.createDirectories(path);
             }
 
-            /*MultipartFile file = uploadFileRequest.getFile();
-            path = Paths.get(userDir + file.getOriginalFilename());
-            Files.copy(file.getInputStream(), path);*/
-
-
-            //unzipFile(path.toString(), userDir);
-            unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
+            handleFile(uploadFileRequest.getFile().getInputStream(),
+                    userDir,
+                    uploadFileRequest.getFile().getOriginalFilename());
+            //unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
         } catch (IOException e) {
             throw new IOException(e.getMessage());
         }
 
 
         return userTasksRepository.findAllByUserIdAndTaskNumber(uploadFileRequest.getUserId(), userTasks.getTaskNumber());
+    }
+
+    private void handleFile(InputStream fileStream, String destDir,String fileName) throws IOException {
+        Tika tika = new Tika();
+        String fileType = tika.detect(fileStream);
+        if (fileType.equals("application/zip")) {
+            unzipFile(fileStream, destDir);
+        } else {
+            saveFile(fileStream, destDir,fileName);
+        }
+
+    }
+
+    private void saveFile(InputStream fileStream, String destDir, String fileName) throws IOException {
+        // Создаем путь для сохранения файла
+        Path filePath = Paths.get(destDir, fileName);
+
+        // Сохраняем содержимое InputStream в файл
+        Files.copy(fileStream, filePath, StandardCopyOption.REPLACE_EXISTING);
     }
 
     private void unzipFile(InputStream zipStream, String destDir) {
