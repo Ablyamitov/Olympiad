@@ -5,6 +5,7 @@ import com.example.olympiad.domain.exception.entity.UserNotFoundException;
 import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.UserRepository;
+import com.example.olympiad.web.dto.user.UserInfo.UserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,18 @@ public class UserService {
         return user;
     }
 
+    @Transactional
+    public User changeUserInfo(final UserInfo userInfo) {
+        User user = userRepository.findByUsername(userInfo.getUsername())
+                .orElseThrow(()->new UserNotFoundException("User does not exits"));
+        user.setName(userInfo.getName());
+        user.setSurname(userInfo.getSurname());
+        user.setEmail(userInfo.getEmail());
+        userRepository.save(user);
+        return user;
+    }
+
+
 
 
 
@@ -60,6 +73,7 @@ public class UserService {
             user.setUsername(usernamePrefix + "_" + session + "_" + i);
             user.setPassword(passwordEncoder.encode(password));
             user.setName(generateRandomString(5)); // генерируем случайное имя
+            user.setSurname(generateRandomString(5));
             user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
             user.setRoles(Set.of(Role.ROLE_PARTICIPANT));
             userRepository.save(user);
@@ -80,6 +94,7 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(password));
 
             user.setName(generateRandomString(5)); // генерируем случайное имя
+            user.setSurname(generateRandomString(5));
             user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
             user.setRoles(Set.of(Role.ROLE_JUDGE));
             userRepository.save(user);
@@ -101,6 +116,7 @@ public class UserService {
             user.setUsername(usernamePrefix + "_" + session + "_" + i);
             user.setPassword(passwordEncoder.encode(password));
             user.setName(generateRandomString(5)); // генерируем случайное имя
+            user.setSurname(generateRandomString(5));
             user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
             user.setRoles(Set.of(Role.ROLE_PARTICIPANT));
             userRepository.save(user);
@@ -121,6 +137,7 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(password));
 
             user.setName(generateRandomString(5)); // генерируем случайное имя
+            user.setSurname(generateRandomString(5));
             user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
             user.setRoles(Set.of(Role.ROLE_JUDGE));
             userRepository.save(user);

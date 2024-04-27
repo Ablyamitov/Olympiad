@@ -9,10 +9,12 @@ import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.TasksRepository;
 import com.example.olympiad.service.mail.EmailService;
+import com.example.olympiad.web.dto.contest.AddProblems.AddProblemsRequest;
 import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestResponse;
+import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.CreatedFile;
@@ -89,11 +91,12 @@ public class ContestService {
         contestRepository.save(contest);
 
         ArrayList<Tasks> tasks = new ArrayList<>();
-        for (String taskString : contestRequest.getProblems()) {
+        for (ProblemInfo problemInfo : contestRequest.getProblemInfos()) {
             Tasks task = new Tasks();
             task.setSession(contest.getSession());
-            task.setTask(taskString);
-            task.setPoints(0); //вот эту штуку убрать и потом убрать not null в бд
+            task.setName(problemInfo.getName());
+            task.setTask(problemInfo.getProblem());
+            task.setPoints(problemInfo.getPoints());
 
             tasks.add(task);
             tasksRepository.save(task);
@@ -179,7 +182,8 @@ public class ContestService {
                         new ContestNotFoundException("Contest not found."));
         ZonedDateTime startTime = ZonedDateTime.now(ZoneId.of("UTC+3")); // Текущее время
 
-        ZonedDateTime endTime = startTime.plus(Duration.ofSeconds(contest.getDuration()));
+        //ZonedDateTime endTime = startTime.plus(Duration.ofSeconds(contest.getDuration()));
+        ZonedDateTime endTime = startTime.plus(mapToDuration(contest.getDuration()));
         contest.setStartTime(startTime);
         contest.setEndTime(endTime);
         contestRepository.save(contest);
@@ -190,6 +194,12 @@ public class ContestService {
         getStartAndEndContestTimeResponse.setEndTime(contest.getEndTime());
 
         return getStartAndEndContestTimeResponse;
+    }
+    private Duration mapToDuration(String durationStr){
+        String[] durationParts = durationStr.split(":");
+        int hours = Integer.parseInt(durationParts[0]);
+        int minutes = Integer.parseInt(durationParts[1]);
+        return Duration.ofHours(hours).plusMinutes(minutes);
     }
 
     @Transactional
@@ -221,6 +231,29 @@ public class ContestService {
                 .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
         contest.setDuration(changeDurationRequest.getNewDuration());
         contestRepository.save(contest);
+        return contest;
+    }
+
+    public Contest addProblems(AddProblemsRequest addProblemsRequest) {
+        Contest contest = contestRepository.findBySession(addProblemsRequest.getSession())
+                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+
+        List<Tasks> tasks = new ArrayList<>();
+        for (ProblemInfo problemInfo : addProblemsRequest.getProblemInfos()) {
+            Tasks task = new Tasks();
+            task.setSession(contest.getSession());
+            task.setName(problemInfo.getName());
+            task.setTask(problemInfo.getProblem());
+            task.setPoints(problemInfo.getPoints());
+
+            tasks.add(task);
+            tasksRepository.save(task);
+        }
+        tasks.addAll(contest.getTasks());
+
+        contest.setTasks(tasks);
+        contestRepository.save(contest);
+
         return contest;
     }
 }

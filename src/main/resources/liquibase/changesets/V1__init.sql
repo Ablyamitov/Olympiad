@@ -1,9 +1,10 @@
 create table if not exists users
 (
     id bigserial primary key,
-    name varchar(255) not null,
+    name varchar(255),
+    surname varchar(255),
     username varchar(255) not null unique,
-    email varchar(255) not null unique,
+    email varchar(255) unique,
     password varchar(255) not null,
     session bigint not null
 
@@ -27,7 +28,7 @@ create table if not exists contest
     participant_count int not null,
     judge_count int not null,
     username_prefix varchar(255) not null,
-    duration bigint not null,
+    duration varchar(255) not null,
     start_time timestamp,
     end_time timestamp
     );
@@ -37,6 +38,7 @@ create table if not exists tasks
 (
     id bigserial primary key,
     session bigint not null,
+    name varchar(255) not null,
     task text not null,
     points int not null,
     constraint fk_tasks_contest foreign key (session) references contest (session) on delete cascade on update no action

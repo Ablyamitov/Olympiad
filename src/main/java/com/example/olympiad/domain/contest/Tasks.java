@@ -17,6 +17,9 @@ public class Tasks {
     @Column(name = "session")
     private Long session;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "task")
     private String task;
 

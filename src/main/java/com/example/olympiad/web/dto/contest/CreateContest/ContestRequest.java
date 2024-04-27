@@ -1,7 +1,6 @@
 package com.example.olympiad.web.dto.contest.CreateContest;
 
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -18,8 +17,8 @@ public class ContestRequest {
 
     private String usernamePrefix;
 
-    private Long duration;
+    private String duration;
 
-    List<String> problems;
+    List<ProblemInfo> problemInfos;
 
 }

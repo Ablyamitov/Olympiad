@@ -37,7 +37,7 @@ public class Contest {
     private String usernamePrefix;
 
     @Column(name = "duration")
-    private Long duration;
+    private String duration;
 
     @Column(name = "start_time")
     private ZonedDateTime startTime;
