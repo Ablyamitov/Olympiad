@@ -67,60 +67,55 @@ public class UserService {
     public Map<User, String> createParticipants(int participantCount, String usernamePrefix, Long session) {
         Map<User, String> participants = new HashMap<>();
         for (int i = 1; i <= participantCount; i++) {
-            User user = new User();
-            String password =  generateRandomString(12);
-            user.setSession(session);
-            user.setUsername(usernamePrefix + "_" + session + "_" + i);
-            user.setPassword(passwordEncoder.encode(password));
-            user.setName(generateRandomString(5)); // генерируем случайное имя
-            user.setSurname(generateRandomString(5));
-            user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
-            user.setRoles(Set.of(Role.ROLE_PARTICIPANT));
-            userRepository.save(user);
-            participants.put(user, password);
+            saveParticipant(usernamePrefix, session, participants, i);
 
         }
         return participants;
+    }
+
+    private void saveParticipant(String usernamePrefix, Long session, Map<User, String> participants, int i) {
+        User user = new User();
+        String password =  generateRandomString(12);
+        user.setSession(session);
+        user.setUsername(usernamePrefix + "_" + session + "_" + i);
+        user.setPassword(passwordEncoder.encode(password));
+        user.setName(generateRandomString(5)); // генерируем случайное имя
+        user.setSurname(generateRandomString(5));
+        user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
+        user.setRoles(Set.of(Role.ROLE_PARTICIPANT));
+        userRepository.save(user);
+        participants.put(user, password);
     }
 
     @Transactional
     public Map<User, String> createJudges(int judgeCount, String usernamePrefix, Long session) {
         Map<User, String> judges = new HashMap<>();
         for (int i = 1; i <= judgeCount; i++) {
-            User user = new User();
-            String password =  generateRandomString(12);
-            user.setSession(session);
-            user.setUsername(usernamePrefix + "_J_" + session + "_" + i);
-            user.setPassword(passwordEncoder.encode(password));
-
-            user.setName(generateRandomString(5)); // генерируем случайное имя
-            user.setSurname(generateRandomString(5));
-            user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
-            user.setRoles(Set.of(Role.ROLE_JUDGE));
-            userRepository.save(user);
-            judges.put(user, password);
-
-
-
+            saveJudge(usernamePrefix, session, judges, i);
         }
         return judges;
+    }
+
+    private void saveJudge(String usernamePrefix, Long session, Map<User, String> judges, int i) {
+        User user = new User();
+        String password =  generateRandomString(12);
+        user.setSession(session);
+        user.setUsername(usernamePrefix + "_J_" + session + "_" + i);
+        user.setPassword(passwordEncoder.encode(password));
+
+        user.setName(generateRandomString(5)); // генерируем случайное имя
+        user.setSurname(generateRandomString(5));
+        user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
+        user.setRoles(Set.of(Role.ROLE_JUDGE));
+        userRepository.save(user);
+        judges.put(user, password);
     }
 
     @Transactional
     public Map<User, String> createParticipants(int participantCount, String usernamePrefix, Long session, int existingParticipants) {
         Map<User, String> participants = new HashMap<>();
         for (int i = existingParticipants+1; i <= participantCount+existingParticipants; i++) {
-            User user = new User();
-            String password =  generateRandomString(12);
-            user.setSession(session);
-            user.setUsername(usernamePrefix + "_" + session + "_" + i);
-            user.setPassword(passwordEncoder.encode(password));
-            user.setName(generateRandomString(5)); // генерируем случайное имя
-            user.setSurname(generateRandomString(5));
-            user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
-            user.setRoles(Set.of(Role.ROLE_PARTICIPANT));
-            userRepository.save(user);
-            participants.put(user, password);
+            saveParticipant(usernamePrefix, session, participants, i);
 
         }
         return participants;
@@ -130,18 +125,7 @@ public class UserService {
     public Map<User, String> createJudges(int judgeCount, String usernamePrefix, Long session, int ExistingJudge) {
         Map<User, String> judges = new HashMap<>();
         for (int i = ExistingJudge+1; i <= judgeCount+ExistingJudge; i++) {
-            User user = new User();
-            String password =  generateRandomString(12);
-            user.setSession(session);
-            user.setUsername(usernamePrefix + "_J_" + session + "_" + i);
-            user.setPassword(passwordEncoder.encode(password));
-
-            user.setName(generateRandomString(5)); // генерируем случайное имя
-            user.setSurname(generateRandomString(5));
-            user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
-            user.setRoles(Set.of(Role.ROLE_JUDGE));
-            userRepository.save(user);
-            judges.put(user, password);
+            saveJudge(usernamePrefix, session, judges, i);
 
 
         }

@@ -42,7 +42,7 @@ public class UserController {
     @Operation(summary = "Set user info", description = "Returns the participant with his specified first name, last name and email")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
-            @ApiResponse(responseCode = "504", description = "Gateway timeout - Contest not started",
+            @ApiResponse(responseCode = "404", description = "Bad request - User does not exist",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/welcome")

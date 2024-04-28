@@ -30,7 +30,7 @@ import java.util.zip.ZipInputStream;
 public class TaskService {
 
     private final UserTasksRepository userTasksRepository;
-    private static String UPLOAD_DIR = "uploads/";
+    private static final String UPLOAD_DIR = "uploads/";
 
 
 
@@ -127,7 +127,7 @@ public class TaskService {
     private void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
         byte[] bytesIn = new byte[104857610];
-        int read = 0;
+        int read;
         while ((read = zipIn.read(bytesIn)) != -1) {
             bos.write(bytesIn, 0, read);
         }

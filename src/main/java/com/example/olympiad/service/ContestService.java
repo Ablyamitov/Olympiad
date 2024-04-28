@@ -9,7 +9,7 @@ import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.TasksRepository;
 import com.example.olympiad.service.mail.EmailService;
-import com.example.olympiad.web.dto.contest.AddProblems.AddProblemsRequest;
+import com.example.olympiad.web.dto.contest.EditProblems.EditProblemsRequest;
 import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
@@ -21,6 +21,7 @@ import com.example.olympiad.web.dto.contest.createUsers.CreatedFile;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -45,7 +46,8 @@ public class ContestService {
     private final UserService userService;
     private final EmailService emailService;
 
-    private final String toAddress = "enverablyamitov2003@gmail.com";
+    @Value("${spring.mail.username}")
+    private String toAddress;
 
 
     @Retryable(retryFor = ContestNotStartedException.class,
@@ -64,9 +66,6 @@ public class ContestService {
     @Transactional
     public ContestResponse create(final ContestRequest contestRequest) {
 
-        /*if (contestRepository.findBySession(contestRequest.getSession()).isPresent()) {
-            throw new IllegalStateException("Contest already exists.");
-        }*/
 
         ContestResponse contestResponse = new ContestResponse();
 
@@ -90,19 +89,20 @@ public class ContestService {
 
         contestRepository.save(contest);
 
-        ArrayList<Tasks> tasks = new ArrayList<>();
-        for (ProblemInfo problemInfo : contestRequest.getProblemInfos()) {
-            Tasks task = new Tasks();
-            task.setSession(contest.getSession());
-            task.setName(problemInfo.getName());
-            task.setTask(problemInfo.getProblem());
-            task.setPoints(problemInfo.getPoints());
-
-            tasks.add(task);
-            tasksRepository.save(task);
-        }
-
-        contest.setTasks(tasks);
+//        List<Tasks> tasks = new ArrayList<>();
+//        for (ProblemInfo problemInfo : contestRequest.getProblemInfos()) {
+//            Tasks task = new Tasks();
+//            task.setSession(contest.getSession());
+//            task.setName(problemInfo.getName());
+//            task.setTask(problemInfo.getProblem());
+//            task.setPoints(problemInfo.getPoints());
+//
+//            tasks.add(task);
+//            tasksRepository.save(task);
+//        }
+//
+//        contest.setTasks(tasks);
+        contest.setTasks(createProblems(contest.getSession(),contestRequest.getProblemInfos()));
         contestRepository.save(contest);
 
 
@@ -110,10 +110,11 @@ public class ContestService {
 
         contestResponse.setContest(contest);
         contestResponse.setFile(file);
-        contestResponse.setTasks(tasks);
+        contestResponse.setTasks(contest.getTasks());
 
         return contestResponse;
     }
+
 
     public CreatedFile createUsers(final CreateUsersRequest createUsersRequest) {
         /*if (contestRepository.findBySession(createUsersRequest.getSession()).isPresent()) {
@@ -183,7 +184,7 @@ public class ContestService {
         ZonedDateTime startTime = ZonedDateTime.now(ZoneId.of("UTC+3")); // Текущее время
 
         //ZonedDateTime endTime = startTime.plus(Duration.ofSeconds(contest.getDuration()));
-        ZonedDateTime endTime = startTime.plus(mapToDuration(contest.getDuration()));
+        ZonedDateTime endTime = startTime.plus(parseToDuration(contest.getDuration()));
         contest.setStartTime(startTime);
         contest.setEndTime(endTime);
         contestRepository.save(contest);
@@ -195,7 +196,7 @@ public class ContestService {
 
         return getStartAndEndContestTimeResponse;
     }
-    private Duration mapToDuration(String durationStr){
+    private Duration parseToDuration(String durationStr){
         String[] durationParts = durationStr.split(":");
         int hours = Integer.parseInt(durationParts[0]);
         int minutes = Integer.parseInt(durationParts[1]);
@@ -234,14 +235,49 @@ public class ContestService {
         return contest;
     }
 
-    public Contest addProblems(AddProblemsRequest addProblemsRequest) {
-        Contest contest = contestRepository.findBySession(addProblemsRequest.getSession())
+    @Transactional
+    public Contest addProblems(EditProblemsRequest editProblemsRequest) {
+        Contest contest = contestRepository.findBySession(editProblemsRequest.getSession())
                 .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
 
+//        List<Tasks> tasks = new ArrayList<>();
+//        for (ProblemInfo problemInfo : editProblemsRequest.getProblemInfos()) {
+//            Tasks task = new Tasks();
+//            task.setSession(contest.getSession());
+//            task.setName(problemInfo.getName());
+//            task.setTask(problemInfo.getProblem());
+//            task.setPoints(problemInfo.getPoints());
+//
+//            tasks.add(task);
+//            tasksRepository.save(task);
+//        }
+        List<Tasks> problems = createProblems(contest.getSession(),editProblemsRequest.getProblemInfos());
+        problems.addAll(contest.getTasks());
+
+        contest.setTasks(problems);
+        contestRepository.save(contest);
+
+        return contest;
+    }
+
+    @Transactional
+    public Contest deleteProblems(EditProblemsRequest editProblemsRequest) {
+        Contest contest = contestRepository.findBySession(editProblemsRequest.getSession())
+                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+
+        for (ProblemInfo problemInfo : editProblemsRequest.getProblemInfos()) {
+            Tasks task = tasksRepository.findBySessionAndName(editProblemsRequest.getSession(), problemInfo.getName());
+            tasksRepository.delete(task);
+        }
+
+        return contest;
+    }
+
+    private List<Tasks> createProblems(Long session, List<ProblemInfo> problemInfos) {
         List<Tasks> tasks = new ArrayList<>();
-        for (ProblemInfo problemInfo : addProblemsRequest.getProblemInfos()) {
+        for (ProblemInfo problemInfo : problemInfos) {
             Tasks task = new Tasks();
-            task.setSession(contest.getSession());
+            task.setSession(session);
             task.setName(problemInfo.getName());
             task.setTask(problemInfo.getProblem());
             task.setPoints(problemInfo.getPoints());
@@ -249,11 +285,7 @@ public class ContestService {
             tasks.add(task);
             tasksRepository.save(task);
         }
-        tasks.addAll(contest.getTasks());
-
-        contest.setTasks(tasks);
-        contestRepository.save(contest);
-
-        return contest;
+        return tasks;
     }
+
 }

@@ -1,7 +1,7 @@
 package com.example.olympiad.web.controller;
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.service.ContestService;
-import com.example.olympiad.web.dto.contest.AddProblems.AddProblemsRequest;
+import com.example.olympiad.web.dto.contest.EditProblems.EditProblemsRequest;
 import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
@@ -141,9 +141,21 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/addProblems")
-    public ResponseEntity<Contest> addProblems(@RequestBody final AddProblemsRequest addProblemsRequest) {
+    public ResponseEntity<Contest> addProblems(@RequestBody final EditProblemsRequest editProblemsRequest) {
         return ResponseEntity.ok(contestService
-                .addProblems(addProblemsRequest));
+                .addProblems(editProblemsRequest));
+    }
+
+    @Operation(summary = "Delete problems", description = "Delete problems from the contest")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
+    @PostMapping("/deleteProblems")
+    public ResponseEntity<Contest> deleteProblems(@RequestBody final EditProblemsRequest editProblemsRequest) {
+        return ResponseEntity.ok(contestService
+                .deleteProblems(editProblemsRequest));
     }
 
 
