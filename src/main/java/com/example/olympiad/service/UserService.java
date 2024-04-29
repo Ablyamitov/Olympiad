@@ -79,9 +79,12 @@ public class UserService {
         user.setSession(session);
         user.setUsername(usernamePrefix + "_" + session + "_" + i);
         user.setPassword(passwordEncoder.encode(password));
-        user.setName(generateRandomString(5)); // генерируем случайное имя
-        user.setSurname(generateRandomString(5));
-        user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
+//        user.setName(generateRandomString(5)); // генерируем случайное имя
+//        user.setSurname(generateRandomString(5));
+//        user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
+        user.setName(null);
+        user.setSurname(null);
+        user.setEmail(null);
         user.setRoles(Set.of(Role.ROLE_PARTICIPANT));
         userRepository.save(user);
         participants.put(user, password);
@@ -103,9 +106,9 @@ public class UserService {
         user.setUsername(usernamePrefix + "_J_" + session + "_" + i);
         user.setPassword(passwordEncoder.encode(password));
 
-        user.setName(generateRandomString(5)); // генерируем случайное имя
-        user.setSurname(generateRandomString(5));
-        user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
+        user.setName(null); // генерируем случайное имя
+        user.setSurname(null);
+        user.setEmail(null); // генерируем случайный email
         user.setRoles(Set.of(Role.ROLE_JUDGE));
         userRepository.save(user);
         judges.put(user, password);
