@@ -36,8 +36,6 @@ public class CustomEmailService implements EmailService {
             mailMessage.setSubject(details.getSubject());
 
             javaMailSender.send(mailMessage);
-            int b = 5;
-            System.out.println("Сюда дошло");
         } catch (Exception e) {
             throw new MailSendException("Ошибка при отправке сообщения...");
         }

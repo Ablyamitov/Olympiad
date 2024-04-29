@@ -1,13 +1,16 @@
 package com.example.olympiad.web.controller;
+
 import com.example.olympiad.domain.contest.Contest;
+import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.service.ContestService;
-import com.example.olympiad.web.dto.contest.EditProblems.EditProblemsRequest;
 import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestResponse;
 import com.example.olympiad.web.dto.contest.DeleteContestRequest;
+import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
+import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
@@ -129,7 +132,7 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/changeDuration")
-    public ResponseEntity<Contest> changeDuration(@RequestBody final ChangeDurationRequest changeDurationRequest) {
+    public ResponseEntity<String> changeDuration(@RequestBody final ChangeDurationRequest changeDurationRequest) {
         return ResponseEntity.ok(contestService
                 .changeDuration(changeDurationRequest));
     }
@@ -141,9 +144,9 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/addProblems")
-    public ResponseEntity<Contest> addProblems(@RequestBody final EditProblemsRequest editProblemsRequest) {
+    public ResponseEntity<List<Tasks>> addProblems(@RequestBody final AddProblemRequest addProblemRequest) {
         return ResponseEntity.ok(contestService
-                .addProblems(editProblemsRequest));
+                .addProblems(addProblemRequest));
     }
 
     @Operation(summary = "Delete problems", description = "Delete problems from the contest")
@@ -153,11 +156,10 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/deleteProblems")
-    public ResponseEntity<Contest> deleteProblems(@RequestBody final EditProblemsRequest editProblemsRequest) {
+    public ResponseEntity<List<Tasks>> deleteProblems(@RequestBody final DeleteProblemRequest deleteProblemRequest) {
         return ResponseEntity.ok(contestService
-                .deleteProblems(editProblemsRequest));
+                .deleteProblem(deleteProblemRequest));
     }
-
 
 
     @Operation(summary = "Delete contest", description = "Return created users")

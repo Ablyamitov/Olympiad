@@ -151,6 +151,22 @@
 		</dependency>
 	</dependencies>
 
+<!--	<build>-->
+<!--		<plugins>-->
+<!--			<plugin>-->
+<!--				<groupId>org.springframework.boot</groupId>-->
+<!--				<artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--				<configuration>-->
+<!--					<excludes>-->
+<!--						<exclude>-->
+<!--							<groupId>org.projectlombok</groupId>-->
+<!--							<artifactId>lombok</artifactId>-->
+<!--						</exclude>-->
+<!--					</excludes>-->
+<!--				</configuration>-->
+<!--			</plugin>-->
+<!--		</plugins>-->
+<!--	</build>-->
 	<build>
 		<plugins>
 			<plugin>
@@ -163,6 +179,9 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+					<!-- Add the following configuration for heap size -->
+					<executable>true</executable>
+					<jvmArguments>-Xms12288m -Xmx20480m</jvmArguments>
 				</configuration>
 			</plugin>
 		</plugins>

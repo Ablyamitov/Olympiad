@@ -1,6 +1,7 @@
 package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.Contest;
+import com.example.olympiad.domain.contest.ContestState;
 import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
 import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
@@ -9,12 +10,13 @@ import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.TasksRepository;
 import com.example.olympiad.service.mail.EmailService;
-import com.example.olympiad.web.dto.contest.EditProblems.EditProblemsRequest;
 import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
+import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
+import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.CreatedFile;
@@ -32,9 +34,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -82,6 +82,7 @@ public class ContestService {
         contest.setJudgeCount(contestRequest.getJudgeCount());
         contest.setUsernamePrefix(contestRequest.getUsernamePrefix());
         contest.setDuration(contestRequest.getDuration());
+        contest.setState(ContestState.NOT_STARTED);
 
 
         Map<User, String> participants = userService.createParticipants(contest.getParticipantCount(), contest.getUsernamePrefix(), contest.getSession());
@@ -102,7 +103,7 @@ public class ContestService {
 //        }
 //
 //        contest.setTasks(tasks);
-        contest.setTasks(createProblems(contest.getSession(),contestRequest.getProblemInfos()));
+        contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
         contestRepository.save(contest);
 
 
@@ -187,7 +188,17 @@ public class ContestService {
         ZonedDateTime endTime = startTime.plus(parseToDuration(contest.getDuration()));
         contest.setStartTime(startTime);
         contest.setEndTime(endTime);
+        contest.setState(ContestState.IN_PROGRESS);
         contestRepository.save(contest);
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                contest.setState(ContestState.FINISHED);
+                contestRepository.save(contest);
+            }
+        }, Date.from(endTime.toInstant())); // Запуск задачи во время endTime
 
         GetStartAndEndContestTimeResponse getStartAndEndContestTimeResponse =
                 new GetStartAndEndContestTimeResponse();
@@ -196,7 +207,8 @@ public class ContestService {
 
         return getStartAndEndContestTimeResponse;
     }
-    private Duration parseToDuration(String durationStr){
+
+    private Duration parseToDuration(String durationStr) {
         String[] durationParts = durationStr.split(":");
         int hours = Integer.parseInt(durationParts[0]);
         int minutes = Integer.parseInt(durationParts[1]);
@@ -216,7 +228,8 @@ public class ContestService {
                 .distinct()
                 .map(contest -> new AllContestsNameSessionResponse(
                         contest.getName(),
-                        contest.getSession()))
+                        contest.getSession(),
+                        contest.getState()))
                 .collect(Collectors.toList());
     }
 
@@ -227,51 +240,35 @@ public class ContestService {
 
 
     @Transactional
-    public Contest changeDuration(ChangeDurationRequest changeDurationRequest) {
+    public String changeDuration(ChangeDurationRequest changeDurationRequest) {
         Contest contest = contestRepository.findBySession(changeDurationRequest.getSession())
                 .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
         contest.setDuration(changeDurationRequest.getNewDuration());
         contestRepository.save(contest);
-        return contest;
+        return contest.getDuration();
     }
 
     @Transactional
-    public Contest addProblems(EditProblemsRequest editProblemsRequest) {
-        Contest contest = contestRepository.findBySession(editProblemsRequest.getSession())
+    public List<Tasks> addProblems(AddProblemRequest addProblemRequest) {
+        Contest contest = contestRepository.findBySession(addProblemRequest.getSession())
                 .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
 
-//        List<Tasks> tasks = new ArrayList<>();
-//        for (ProblemInfo problemInfo : editProblemsRequest.getProblemInfos()) {
-//            Tasks task = new Tasks();
-//            task.setSession(contest.getSession());
-//            task.setName(problemInfo.getName());
-//            task.setTask(problemInfo.getProblem());
-//            task.setPoints(problemInfo.getPoints());
-//
-//            tasks.add(task);
-//            tasksRepository.save(task);
-//        }
-        List<Tasks> problems = createProblems(contest.getSession(),editProblemsRequest.getProblemInfos());
-        problems.addAll(contest.getTasks());
 
+        Tasks task = new Tasks();
+        task.setSession(contest.getSession());
+        task.setName(addProblemRequest.getName());
+        task.setTask(addProblemRequest.getProblem());
+        task.setPoints(addProblemRequest.getPoints());
+
+        tasksRepository.save(task);
+
+        List<Tasks> problems = tasksRepository.findAllBySession(contest.getSession());
         contest.setTasks(problems);
         contestRepository.save(contest);
 
-        return contest;
+        return problems;
     }
 
-    @Transactional
-    public Contest deleteProblems(EditProblemsRequest editProblemsRequest) {
-        Contest contest = contestRepository.findBySession(editProblemsRequest.getSession())
-                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
-
-        for (ProblemInfo problemInfo : editProblemsRequest.getProblemInfos()) {
-            Tasks task = tasksRepository.findBySessionAndName(editProblemsRequest.getSession(), problemInfo.getName());
-            tasksRepository.delete(task);
-        }
-
-        return contest;
-    }
 
     private List<Tasks> createProblems(Long session, List<ProblemInfo> problemInfos) {
         List<Tasks> tasks = new ArrayList<>();
@@ -288,4 +285,9 @@ public class ContestService {
         return tasks;
     }
 
+    @Transactional
+    public LinkedList<Tasks> deleteProblem(DeleteProblemRequest deleteProblemRequest) {
+        tasksRepository.deleteByIdAndSession(deleteProblemRequest.getId(), deleteProblemRequest.getSession());
+        return tasksRepository.findAllBySession(deleteProblemRequest.getSession());
+    }
 }

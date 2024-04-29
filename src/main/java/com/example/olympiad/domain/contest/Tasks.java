@@ -1,9 +1,12 @@
 package com.example.olympiad.domain.contest;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "tasks")
@@ -29,6 +32,7 @@ public class Tasks {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session", referencedColumnName = "session", insertable = false, updatable = false)
     @JsonBackReference
+    @JsonIgnore //
     private Contest contest;
 
 

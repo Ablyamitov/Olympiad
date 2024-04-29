@@ -4,8 +4,11 @@ import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
 import lombok.Data;
 
 import java.util.List;
+
 @Data
-public class EditProblemsRequest {
+public class AddProblemRequest {
     private Long session;
-    List<ProblemInfo> problemInfos;
+    private String name;
+    private String problem;
+    private int points;
 }
