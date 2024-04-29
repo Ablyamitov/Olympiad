@@ -3,7 +3,6 @@ package com.example.olympiad.service;
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.ContestState;
 import com.example.olympiad.domain.contest.Tasks;
-import com.example.olympiad.domain.exception.ControllerAdvice;
 import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
 import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
 import com.example.olympiad.domain.mail.EmailDetails;
@@ -15,19 +14,20 @@ import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
-import com.example.olympiad.web.dto.contest.CreateContest.ContestResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
 import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.CreatedFile;
+import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -73,8 +73,6 @@ public class ContestService {
     public ContestAndFileResponse create(final ContestRequest contestRequest) {
 
 
-        ContestResponse contestResponse = new ContestResponse();
-
         Contest contest = new Contest();
 
         long maxSession;
@@ -112,9 +110,7 @@ public class ContestService {
         contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
         contestRepository.save(contest);
 
-
         File file = createFile(contest, participants, judges);
-
         byte[] fileContent;
         try {
             assert file != null;
@@ -122,18 +118,17 @@ public class ContestService {
         } catch (IOException e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }
-
         ContestAndFileResponse response = new ContestAndFileResponse();
         response.setContest(contest);
         response.setFileContent(fileContent);
 
-        if (!file.delete()) log.info("Файл "+ file.getName() + " не может быть удален");
+        if (!file.delete()) log.info("Файл " + file.getName() + " не может быть удален");
 
         return response;
     }
 
 
-    public CreatedFile createUsers(final CreateUsersRequest createUsersRequest) {
+    public FileResponse createUsers(final CreateUsersRequest createUsersRequest) {
         /*if (contestRepository.findBySession(createUsersRequest.getSession()).isPresent()) {
             throw new IllegalStateException("Contest already exists.");
         }*/
@@ -148,13 +143,41 @@ public class ContestService {
         contestRepository.save(contest);
 
         File file = createFile(contest, participants, judges);
+        byte[] fileContent;
+        try {
+            assert file != null;
+            fileContent = Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
+        FileResponse fileResponse = new FileResponse();
+        fileResponse.setFileContent(fileContent);
 
-        CreatedFile createdFile = new CreatedFile();
-        createdFile.setFile(file);
-        return createdFile;
+
+        if (!file.delete()) log.info("Файл " + file.getName() + " не может быть удален");
+        return fileResponse;
     }
 
     private File createFile(Contest contest, Map<User, String> participants, Map<User, String> judges) {
+        Map<User, String> sortedParticipants = participants.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByKey(Comparator.comparing(User::getUsername)))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
+
+        Map<User, String> sortedJudges = judges.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByKey(Comparator.comparing(User::getUsername)))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue,
+                        LinkedHashMap::new
+                ));
         try {
             File file = new File("contest_info.txt");
             FileWriter writer = new FileWriter(file);
@@ -168,12 +191,12 @@ public class ContestService {
             String subject = "Информация об олимпиаде: " + contest.getName();
             writer.write("Участники: \n");
             body.append("Участники: \n");
-            for (Map.Entry<User, String> entry : participants.entrySet()) {
+            for (Map.Entry<User, String> entry : sortedParticipants.entrySet()) {
                 writer.write("Username: " + entry.getKey().getUsername() + ", Password: " + entry.getValue() + "\n");
                 body.append("Username: ").append(entry.getKey().getUsername()).append(", Password: ").append(entry.getValue()).append("\n");
             }
             writer.write("Жюри: \n");
-            for (Map.Entry<User, String> entry : judges.entrySet()) {
+            for (Map.Entry<User, String> entry : sortedJudges.entrySet()) {
                 writer.write("Username: " + entry.getKey().getUsername() + ", Password: " + entry.getValue() + "\n");
                 body.append("Username: ").append(entry.getKey().getUsername()).append(", Password: ").append(entry.getValue()).append("\n");
             }
@@ -187,7 +210,7 @@ public class ContestService {
 
             emailService.sendSimpleMail(emailDetails);
 
-            log.info("Файл "+ file.getName() + " создан");
+            log.info("Файл " + file.getName() + " создан");
             return file;
         } catch (IOException e) {
             System.err.println("Ошибка с файлом");

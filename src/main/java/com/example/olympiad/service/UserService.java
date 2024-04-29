@@ -5,6 +5,7 @@ import com.example.olympiad.domain.exception.entity.UserNotFoundException;
 import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.UserRepository;
+import com.example.olympiad.web.dto.user.UserInfo.ChangeUserInfoResponse;
 import com.example.olympiad.web.dto.user.UserInfo.UserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -49,14 +51,28 @@ public class UserService {
     }
 
     @Transactional
-    public User changeUserInfo(final UserInfo userInfo) {
+    public ChangeUserInfoResponse changeUserInfo(final UserInfo userInfo) {
         User user = userRepository.findByUsername(userInfo.getUsername())
                 .orElseThrow(()->new UserNotFoundException("User does not exits"));
+
+
         user.setName(userInfo.getName());
         user.setSurname(userInfo.getSurname());
         user.setEmail(userInfo.getEmail());
+
         userRepository.save(user);
-        return user;
+
+        ChangeUserInfoResponse changeUserInfoResponse = new ChangeUserInfoResponse();
+        changeUserInfoResponse.setId(user.getId());
+        changeUserInfoResponse.setName(user.getName());
+        changeUserInfoResponse.setSurname(user.getSurname());
+        changeUserInfoResponse.setUsername(user.getUsername());
+        changeUserInfoResponse.setEmail(user.getEmail());
+        changeUserInfoResponse.setSession(user.getSession());
+        changeUserInfoResponse.setRole(user.getRoles().stream()
+                .map(Role::name)
+                .collect(Collectors.joining(", ")));
+        return changeUserInfoResponse;
     }
 
 
@@ -136,6 +152,7 @@ public class UserService {
     }
 
     private String generateRandomString() {
+        if (12 < 1) throw new IllegalArgumentException();
         StringBuilder sb = new StringBuilder(12);
         for (int i = 0; i < 12; i++) {
             int rndCharAt = random.nextInt(DATA_FOR_RANDOM_STRING.length());

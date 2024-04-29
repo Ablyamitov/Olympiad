@@ -90,19 +90,20 @@ public class AdminController {
     })
     @PostMapping("/createUsers")
     public ResponseEntity<FileResponse> createUsers(@RequestBody final CreateUsersRequest createUsersRequest) {
-        CreatedFile response = contestService.createUsers(createUsersRequest);
+        FileResponse response = contestService.createUsers(createUsersRequest);
 
-        File file = response.getFile();
-
-        try {
-            byte[] fileContent = Files.readAllBytes(file.toPath());
-            FileResponse fileResponse = new FileResponse();
-            fileResponse.setFileContent(fileContent);
-
-            return ResponseEntity.ok(fileResponse);
-        } catch (IOException e) {
-            throw new RuntimeException("Error: " + e.getMessage());
-        }
+        return ResponseEntity.ok(response);
+//        File file = response.getFile();
+//
+//        try {
+//            byte[] fileContent = Files.readAllBytes(file.toPath());
+//            FileResponse fileResponse = new FileResponse();
+//            fileResponse.setFileContent(fileContent);
+//
+//            return ResponseEntity.ok(fileResponse);
+//        } catch (IOException e) {
+//            throw new RuntimeException("Error: " + e.getMessage());
+//        }
     }
 
     @Operation(summary = "Get all contests", description = "Return all contests")

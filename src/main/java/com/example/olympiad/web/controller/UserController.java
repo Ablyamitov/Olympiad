@@ -3,7 +3,6 @@ package com.example.olympiad.web.controller;
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.UserTasks;
 import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
-import com.example.olympiad.domain.user.User;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.service.UserService;
@@ -11,6 +10,7 @@ import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
 import com.example.olympiad.web.dto.task.UploadFileRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackResponse;
+import com.example.olympiad.web.dto.user.UserInfo.ChangeUserInfoResponse;
 import com.example.olympiad.web.dto.user.UserInfo.UserInfo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,7 +46,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/welcome")
-    public ResponseEntity<User> welcome(@RequestBody UserInfo userInfo) {
+    public ResponseEntity<ChangeUserInfoResponse> welcome(@RequestBody UserInfo userInfo) {
         return ResponseEntity.ok(userService.changeUserInfo(userInfo));
     }
 
