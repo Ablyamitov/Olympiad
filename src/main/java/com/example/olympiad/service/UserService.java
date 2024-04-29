@@ -75,7 +75,7 @@ public class UserService {
 
     private void saveParticipant(String usernamePrefix, Long session, Map<User, String> participants, int i) {
         User user = new User();
-        String password =  generateRandomString(12);
+        String password =  generateRandomString();
         user.setSession(session);
         user.setUsername(usernamePrefix + "_" + session + "_" + i);
         user.setPassword(passwordEncoder.encode(password));
@@ -101,7 +101,7 @@ public class UserService {
 
     private void saveJudge(String usernamePrefix, Long session, Map<User, String> judges, int i) {
         User user = new User();
-        String password =  generateRandomString(12);
+        String password =  generateRandomString();
         user.setSession(session);
         user.setUsername(usernamePrefix + "_J_" + session + "_" + i);
         user.setPassword(passwordEncoder.encode(password));
@@ -135,10 +135,9 @@ public class UserService {
         return judges;
     }
 
-    private String generateRandomString(int length) {
-        if (length < 1) throw new IllegalArgumentException();
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
+    private String generateRandomString() {
+        StringBuilder sb = new StringBuilder(12);
+        for (int i = 0; i < 12; i++) {
             int rndCharAt = random.nextInt(DATA_FOR_RANDOM_STRING.length());
             char rndChar = DATA_FOR_RANDOM_STRING.charAt(rndCharAt);
             sb.append(rndChar);

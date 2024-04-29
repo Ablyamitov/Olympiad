@@ -3,6 +3,7 @@ package com.example.olympiad.service;
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.ContestState;
 import com.example.olympiad.domain.contest.Tasks;
+import com.example.olympiad.domain.exception.ControllerAdvice;
 import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
 import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
 import com.example.olympiad.domain.mail.EmailDetails;
@@ -12,6 +13,7 @@ import com.example.olympiad.repository.TasksRepository;
 import com.example.olympiad.service.mail.EmailService;
 import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
+import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
@@ -23,6 +25,8 @@ import com.example.olympiad.web.dto.contest.createUsers.CreatedFile;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -31,6 +35,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -48,6 +53,7 @@ public class ContestService {
 
     @Value("${spring.mail.username}")
     private String toAddress;
+    public static final Logger log = LoggerFactory.getLogger(ContestService.class);
 
 
     @Retryable(retryFor = ContestNotStartedException.class,
@@ -64,7 +70,7 @@ public class ContestService {
 
 
     @Transactional
-    public ContestResponse create(final ContestRequest contestRequest) {
+    public ContestAndFileResponse create(final ContestRequest contestRequest) {
 
 
         ContestResponse contestResponse = new ContestResponse();
@@ -109,11 +115,21 @@ public class ContestService {
 
         File file = createFile(contest, participants, judges);
 
-        contestResponse.setContest(contest);
-        contestResponse.setFile(file);
-        contestResponse.setTasks(contest.getTasks());
+        byte[] fileContent;
+        try {
+            assert file != null;
+            fileContent = Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException("Error: " + e.getMessage());
+        }
 
-        return contestResponse;
+        ContestAndFileResponse response = new ContestAndFileResponse();
+        response.setContest(contest);
+        response.setFileContent(fileContent);
+
+        if (!file.delete()) log.info("Файл "+ file.getName() + " не может быть удален");
+
+        return response;
     }
 
 
@@ -171,6 +187,7 @@ public class ContestService {
 
             emailService.sendSimpleMail(emailDetails);
 
+            log.info("Файл "+ file.getName() + " создан");
             return file;
         } catch (IOException e) {
             System.err.println("Ошибка с файлом");

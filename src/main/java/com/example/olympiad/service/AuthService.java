@@ -31,11 +31,20 @@ public class AuthService {
                         loginRequest.getUsername(), loginRequest.getPassword())
         );
         User user = userService.getByUsername(loginRequest.getUsername());
+        mapToJwtResponse(jwtResponse, user);
+
+
+        jwtResponse.setAccessToken(jwtTokenProvider.createAccessToken(
+                user.getId(), user.getUsername(), user.getRoles())
+        );
+
+        return jwtResponse;
+    }
+
+    private void mapToJwtResponse(JwtResponse jwtResponse, User user) {
         jwtResponse.setId(user.getId());
-        /**/
         jwtResponse.setName(user.getName());
         jwtResponse.setSurname(user.getSurname());
-        /**/
         jwtResponse.setUsername(user.getUsername());
 
         jwtResponse.setEmail(user.getEmail());
@@ -44,13 +53,6 @@ public class AuthService {
         jwtResponse.setRole(user.getRoles().stream()
                 .map(Role::name)
                 .collect(Collectors.joining(", ")));
-
-
-        jwtResponse.setAccessToken(jwtTokenProvider.createAccessToken(
-                user.getId(), user.getUsername(), user.getRoles())
-        );
-
-        return jwtResponse;
     }
 
 
@@ -65,19 +67,7 @@ public class AuthService {
             try {
                 String username = jwtTokenProvider.getUsername(bearerToken);
                 User user = userService.getByUsername(username);
-                jwtResponse.setId(user.getId());
-                /**/
-                jwtResponse.setName(user.getName());
-                jwtResponse.setSurname(user.getSurname());
-                /**/
-                jwtResponse.setUsername(user.getUsername());
-
-                jwtResponse.setEmail(user.getEmail());
-
-                jwtResponse.setSession(user.getSession());
-                jwtResponse.setRole(user.getRoles().stream()
-                        .map(Role::name)
-                        .collect(Collectors.joining(", ")));
+                mapToJwtResponse(jwtResponse, user);
 
                 jwtResponse.setAccessToken(bearerToken);
             } catch (UserNotFoundException ignored) {

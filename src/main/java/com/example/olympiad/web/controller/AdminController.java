@@ -43,6 +43,31 @@ public class AdminController {
 
     private final ContestService contestService;
 
+//    @Operation(summary = "Create contest", description = "Return created contest and users")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+//            @ApiResponse(responseCode = "404", description = "Bad request - Contest already exists",
+//                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+//    })
+//    @PostMapping("/createContest")
+//    public ResponseEntity<ContestAndFileResponse> createContest(@RequestBody final ContestRequest contestRequest) {
+//        ContestResponse contestResponse = contestService.create(contestRequest);
+//        File file = contestResponse.getFile();
+//
+//        try {
+//            byte[] fileContent = Files.readAllBytes(file.toPath());
+//            ContestAndFileResponse response = new ContestAndFileResponse();
+//            response.setContest(contestResponse.getContest());
+//
+//
+//            response.setFileContent(fileContent);
+//
+//            return ResponseEntity.ok(response);
+//        } catch (IOException e) {
+//            throw new RuntimeException("Error: " + e.getMessage());
+//        }
+//    }
+
     @Operation(summary = "Create contest", description = "Return created contest and users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -51,22 +76,11 @@ public class AdminController {
     })
     @PostMapping("/createContest")
     public ResponseEntity<ContestAndFileResponse> createContest(@RequestBody final ContestRequest contestRequest) {
-        ContestResponse contestResponse = contestService.create(contestRequest);
-        File file = contestResponse.getFile();
-
-        try {
-            byte[] fileContent = Files.readAllBytes(file.toPath());
-            ContestAndFileResponse response = new ContestAndFileResponse();
-            response.setContest(contestResponse.getContest());
-
-
-            response.setFileContent(fileContent);
-
-            return ResponseEntity.ok(response);
-        } catch (IOException e) {
-            throw new RuntimeException("Error: " + e.getMessage());
-        }
+        ContestAndFileResponse response = contestService.create(contestRequest);
+        return ResponseEntity.ok(response);
     }
+
+
 
     @Operation(summary = "Create users for contest", description = "Return created users")
     @ApiResponses(value = {
