@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.http.ResponseEntity;
@@ -128,11 +129,14 @@ public class AdminController {
     @Operation(summary = "Change duration", description = "Change contest duration")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "400", description = "Valid exception - validation failed",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+            ,
             @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/changeDuration")
-    public ResponseEntity<String> changeDuration(@RequestBody final ChangeDurationRequest changeDurationRequest) {
+    public ResponseEntity<String> changeDuration(@Valid @RequestBody final ChangeDurationRequest changeDurationRequest) {
         return ResponseEntity.ok(contestService
                 .changeDuration(changeDurationRequest));
     }

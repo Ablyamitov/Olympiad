@@ -226,6 +226,7 @@ public class ContestService {
     public List<AllContestsNameSessionResponse> getAllContests() {
         return contestRepository.findAll().stream()
                 .distinct()
+                .sorted(Comparator.comparing(Contest::getSession))
                 .map(contest -> new AllContestsNameSessionResponse(
                         contest.getName(),
                         contest.getSession(),

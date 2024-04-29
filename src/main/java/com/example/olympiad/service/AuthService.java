@@ -32,7 +32,14 @@ public class AuthService {
         );
         User user = userService.getByUsername(loginRequest.getUsername());
         jwtResponse.setId(user.getId());
+        /**/
+        jwtResponse.setName(user.getName());
+        jwtResponse.setSurname(user.getSurname());
+        /**/
         jwtResponse.setUsername(user.getUsername());
+
+        jwtResponse.setEmail(user.getEmail());
+
         jwtResponse.setSession(user.getSession());
         jwtResponse.setRole(user.getRoles().stream()
                 .map(Role::name)
@@ -59,7 +66,14 @@ public class AuthService {
                 String username = jwtTokenProvider.getUsername(bearerToken);
                 User user = userService.getByUsername(username);
                 jwtResponse.setId(user.getId());
+                /**/
+                jwtResponse.setName(user.getName());
+                jwtResponse.setSurname(user.getSurname());
+                /**/
                 jwtResponse.setUsername(user.getUsername());
+
+                jwtResponse.setEmail(user.getEmail());
+
                 jwtResponse.setSession(user.getSession());
                 jwtResponse.setRole(user.getRoles().stream()
                         .map(Role::name)
