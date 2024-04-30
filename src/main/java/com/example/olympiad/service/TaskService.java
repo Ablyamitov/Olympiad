@@ -10,6 +10,8 @@ import com.example.olympiad.web.dto.task.UploadFileRequest;
 import com.example.olympiad.web.dto.task.UploadFileResponse;
 import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackResponse;
+import com.github.junrar.Junrar;
+import com.github.junrar.exception.RarException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.tika.Tika;
@@ -73,7 +75,7 @@ public class TaskService {
 
 
         try {
-            String userDir = UPLOAD_DIR + uploadFileRequest.getUserId().toString() + "/";
+            String userDir = UPLOAD_DIR + uploadFileRequest.getUserId().toString() + "/" + userTasks.getId().toString() + "/";
             Path path = Paths.get(userDir);
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
@@ -83,7 +85,7 @@ public class TaskService {
                     userDir,
                     uploadFileRequest.getFile().getOriginalFilename());
             //unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
-        } catch (IOException e) {
+        } catch (IOException | RarException e) {
             throw new IOException(e.getMessage());
         }
 
@@ -91,14 +93,33 @@ public class TaskService {
         return userTasksRepository.findAllByUserIdAndTaskNumber(uploadFileRequest.getUserId(), userTasks.getTaskNumber());
     }
 
-    private void handleFile(InputStream fileStream, String destDir,String fileName) throws IOException {
+    private void handleFile(InputStream fileStream, String destDir,String fileName) throws IOException, RarException {
+//        Tika tika = new Tika();
+//        String fileType = tika.detect(fileStream);
+//        if (fileType.equals("application/zip")) {
+//            unzipFile(fileStream, destDir);
+////        } else if (fileType.startsWith("application/x-rar-compressed")) {
+////            extractRar(fileStream, destDir);
+//        } else {
+//            saveFile(fileStream, destDir,fileName);
+//        }
+        // Сохраняем InputStream во временный файл
+        Path tempPath = Files.createTempFile("temp", null);
+        Files.copy(fileStream, tempPath, StandardCopyOption.REPLACE_EXISTING);
+
+        // Определяем тип файла
         Tika tika = new Tika();
-        String fileType = tika.detect(fileStream);
+        String fileType = tika.detect(tempPath);
+
+        // Обрабатываем файл в зависимости от его типа
         if (fileType.equals("application/zip")) {
-            unzipFile(fileStream, destDir);
+            unzipFile(Files.newInputStream(tempPath), destDir);
         } else {
-            saveFile(fileStream, destDir,fileName);
+            saveFile(Files.newInputStream(tempPath), destDir, fileName);
         }
+
+        // Удаляем временный файл
+        Files.delete(tempPath);
 
     }
 
@@ -107,7 +128,12 @@ public class TaskService {
         Path filePath = Paths.get(destDir, fileName);
 
         // Сохраняем содержимое InputStream в файл
-        Files.copy(fileStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(fileStream, filePath);
+    }
+
+    private void extractRar(InputStream rarStream, String destDir) throws IOException, RarException {
+        File destinationFolder = new File(destDir);
+        Junrar.extract(rarStream, destinationFolder);
     }
 
     private void unzipFile(InputStream zipStream, String destDir) {
@@ -174,7 +200,7 @@ public class TaskService {
             jtr.setSession(ut.getSession());
             jtr.setUserName(userService.getByUserId(ut.getUserId()).getUsername());
             jtr.setTaskNumber(ut.getTaskNumber());
-            jtr.setFileContent(ut.getFileContent());
+            //jtr.setFileContent(ut.getFileContent());
             jtr.setPoints(ut.getPoints());
             jtr.setComment(ut.getComment());
             jtr.setSentTime(ut.getSentTime());

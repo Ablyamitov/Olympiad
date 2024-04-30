@@ -19,7 +19,7 @@ public class JudgeTableResponse {
 
     private Long taskNumber;
 
-    private String fileContent;
+    //private String fileContent;
 
     private Integer points;
 

@@ -17,11 +17,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.apache.tika.Tika;
 import org.springdoc.api.ErrorMessage;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Tag(name = "Judge controller", description = "Judge management ")
@@ -30,28 +37,56 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 public class JudgeController {
+    private final Tika tika = new Tika();
     private final TaskService taskService;
     private final UserTasksRepository userTasksRepository;
     //Judge
     @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for judge")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
-            @ApiResponse(responseCode = "504", description = "Gateway timeout - Contest not started",
-                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
     @GetMapping("/contest/{session}")
     public ResponseEntity<List<JudgeTableResponse>> getContestTableBySession(@PathVariable Long session) {
-        try {
+
             return ResponseEntity.ok(taskService.getJudgeTableBySession(session));
-        } catch (ContestNotStartedException e) {
-            throw new ContestNotStartedException("Contest not started");
-        }
+
     }
+
+    @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for judge from database")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - File not found",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
     @GetMapping("/download/{id}")
     public ResponseEntity<String> download(@PathVariable Long id) {
         UserTasks userTask = userTasksRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("File not found with id: " + id));
 
         return ResponseEntity.ok().body(userTask.getFileContent());
+    }
+
+    @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for judge from localstorage")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - File not found",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
+    @GetMapping("/download/{userId}/{userTasksId}/{fileName}")
+    public ResponseEntity<Resource> download(@PathVariable Long userId, @PathVariable Long userTasksId, @PathVariable String fileName) throws Exception {
+        //Подправить, засунув в fileContent путь
+        //String fileName = userTasksRepository.findById(userTasksId).orElseThrow().getFileName();
+        Path file = Paths.get("uploads", userId.toString(), userTasksId.toString(), fileName);
+        Resource resource = new UrlResource(file.toUri());
+
+        if (resource.exists() || resource.isReadable()) {
+            String mimeType = tika.detect(file);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(mimeType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        } else {
+            throw new RuntimeException("Could not read the file!");
+        }
     }
 }
