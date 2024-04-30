@@ -2,6 +2,7 @@ package com.example.olympiad.domain.contest;
 
 import com.example.olympiad.domain.user.User;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -46,11 +47,13 @@ public class UserTasks {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session", insertable = false, updatable = false)
     @JsonBackReference
+    @JsonIgnore
     private Contest contest;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     @JsonBackReference
+    @JsonIgnore
     private User user;
 
     @Enumerated(EnumType.STRING)

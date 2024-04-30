@@ -7,6 +7,8 @@ import com.example.olympiad.repository.UserTasksRepository;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
+import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
+import com.example.olympiad.web.dto.task.Download.DownloadRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -66,17 +68,17 @@ public class JudgeController {
         return ResponseEntity.ok().body(userTask.getFileContent());
     }
 
+
     @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for judge from localstorage")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - File not found",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    @GetMapping("/download/{userId}/{userTasksId}/{fileName}")
-    public ResponseEntity<Resource> download(@PathVariable Long userId, @PathVariable Long userTasksId, @PathVariable String fileName) throws Exception {
+    @PostMapping("/download")
+    public ResponseEntity<Resource> download(@RequestBody final DownloadRequest downloadRequest) throws Exception {
         //Подправить, засунув в fileContent путь
-        //String fileName = userTasksRepository.findById(userTasksId).orElseThrow().getFileName();
-        Path file = Paths.get("uploads", userId.toString(), userTasksId.toString(), fileName);
+        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
         Resource resource = new UrlResource(file.toUri());
 
         if (resource.exists() || resource.isReadable()) {
@@ -88,5 +90,17 @@ public class JudgeController {
         } else {
             throw new RuntimeException("Could not read the file!");
         }
+    }
+
+
+    @Operation(summary = "Send feedback", description = "Send feedback from judge to participant problem")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - User task not found",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
+    @PostMapping("/feedback")
+    public ResponseEntity<JudgeTableResponse> feedback(@RequestBody FeedbackRequest feedbackRequest) {
+        return ResponseEntity.ok(taskService.feedback(feedbackRequest));
     }
 }

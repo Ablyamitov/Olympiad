@@ -15,11 +15,12 @@ public class JudgeTableResponse {
 
     private Long session;
 
+    private Long userId;
+
     private String userName;
 
     private Long taskNumber;
 
-    //private String fileContent;
 
     private Integer points;
 
@@ -29,7 +30,7 @@ public class JudgeTableResponse {
 
     private String fileName;
 
-    private String fileExtension;
+//    private String fileExtension;
 
     private String state;
 

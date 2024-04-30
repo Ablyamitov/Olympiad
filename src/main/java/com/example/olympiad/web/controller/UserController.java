@@ -110,14 +110,14 @@ public class UserController {
     }
 
 
-    @Operation(summary = "Send feedback", description = "Send feedback from judge to participant problem")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
-    })
-    @PostMapping("/contest/feedback")
-    public ResponseEntity<FeedbackResponse> feedback(@RequestBody FeedbackRequest feedbackRequest) {
-        return ResponseEntity.ok(taskService.feedback(feedbackRequest));
-    }
+//    @Operation(summary = "Send feedback", description = "Send feedback from judge to participant problem")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
+//    })
+//    @PostMapping("/contest/feedback")
+//    public ResponseEntity<FeedbackResponse> feedback(@RequestBody FeedbackRequest feedbackRequest) {
+//        return ResponseEntity.ok(taskService.feedback(feedbackRequest));
+//    }
 
 
 

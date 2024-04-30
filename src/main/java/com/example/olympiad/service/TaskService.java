@@ -2,6 +2,7 @@ package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.UserTaskState;
 import com.example.olympiad.domain.contest.UserTasks;
+import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
 import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.repository.UserTasksRepository;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
@@ -12,6 +13,7 @@ import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackResponse;
 import com.github.junrar.Junrar;
 import com.github.junrar.exception.RarException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.tika.Tika;
@@ -94,15 +96,7 @@ public class TaskService {
     }
 
     private void handleFile(InputStream fileStream, String destDir,String fileName) throws IOException, RarException {
-//        Tika tika = new Tika();
-//        String fileType = tika.detect(fileStream);
-//        if (fileType.equals("application/zip")) {
-//            unzipFile(fileStream, destDir);
-////        } else if (fileType.startsWith("application/x-rar-compressed")) {
-////            extractRar(fileStream, destDir);
-//        } else {
-//            saveFile(fileStream, destDir,fileName);
-//        }
+
         // Сохраняем InputStream во временный файл
         Path tempPath = Files.createTempFile("temp", null);
         Files.copy(fileStream, tempPath, StandardCopyOption.REPLACE_EXISTING);
@@ -112,11 +106,12 @@ public class TaskService {
         String fileType = tika.detect(tempPath);
 
         // Обрабатываем файл в зависимости от его типа
-        if (fileType.equals("application/zip")) {
-            unzipFile(Files.newInputStream(tempPath), destDir);
-        } else {
-            saveFile(Files.newInputStream(tempPath), destDir, fileName);
-        }
+//        if (fileType.equals("application/zip")) {
+//            unzipFile(Files.newInputStream(tempPath), destDir);
+//        } else {
+//            saveFile(Files.newInputStream(tempPath), destDir, fileName);
+//        }
+        saveFile(Files.newInputStream(tempPath), destDir, fileName);
 
         // Удаляем временный файл
         Files.delete(tempPath);
@@ -175,43 +170,52 @@ public class TaskService {
     }
 
     @Transactional
-    public FeedbackResponse feedback(FeedbackRequest feedbackRequest) {
-        UserTasks userTasks = userTasksRepository.findTopByUserIdAndTaskNumberOrderByIdDesc(feedbackRequest.getUserId(),
-                feedbackRequest.getTaskNumber());
-        userTasks.setComment(feedbackRequest.getComment());
-        userTasks.setPoints(feedbackRequest.getPoints());
-        userTasksRepository.save(userTasks);
+    public JudgeTableResponse feedback(FeedbackRequest feedbackRequest) {
+        UserTasks ut = userTasksRepository.findById(feedbackRequest.getUserTasksId())
+                .orElseThrow(()-> new EntityNotFoundException("User task not found"));
+        if(feedbackRequest.isAccepted()){
+            ut.setPoints(feedbackRequest.getPoints());
+            ut.setComment(feedbackRequest.getComment());
+            ut.setState(UserTaskState.ACCEPTED);
+        }
+        else {
+            ut.setPoints(0);
+            ut.setComment(feedbackRequest.getComment());
+            ut.setState(UserTaskState.REJECTED);
+        }
 
-        FeedbackResponse feedbackResponse = new FeedbackResponse();
-        feedbackResponse.setSession(userTasks.getSession());
-        feedbackResponse.setUserId(userTasks.getUserId());
-        feedbackResponse.setComment(userTasks.getComment());
-        feedbackResponse.setPoints(userTasks.getPoints());
-        return feedbackResponse;
 
+        userTasksRepository.save(ut);
+
+
+        return mapToJudgeTableResponse(ut);
     }
 
     public List<JudgeTableResponse> getJudgeTableBySession(Long session) {
         List<UserTasks> userTasks = userTasksRepository.findAllBySession(session);
         List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
         for (UserTasks ut: userTasks) {
-            JudgeTableResponse jtr = new JudgeTableResponse();
-            jtr.setId(ut.getId());
-            jtr.setSession(ut.getSession());
-            jtr.setUserName(userService.getByUserId(ut.getUserId()).getUsername());
-            jtr.setTaskNumber(ut.getTaskNumber());
-            //jtr.setFileContent(ut.getFileContent());
-            jtr.setPoints(ut.getPoints());
-            jtr.setComment(ut.getComment());
-            jtr.setSentTime(ut.getSentTime());
-            jtr.setFileName(ut.getFileName());
-            jtr.setFileExtension(ut.getFileExtension());
-            jtr.setState(ut.getState().name());
-
+            JudgeTableResponse jtr = mapToJudgeTableResponse(ut);
             judgeTableResponses.add(jtr);
         }
 
         return judgeTableResponses;
 
+    }
+
+    private JudgeTableResponse mapToJudgeTableResponse(UserTasks ut) {
+        JudgeTableResponse jtr = new JudgeTableResponse();
+        jtr.setId(ut.getId());
+        jtr.setSession(ut.getSession());
+        jtr.setUserId(ut.getUserId());
+        jtr.setUserName(userService.getByUserId(ut.getUserId()).getUsername());
+        jtr.setTaskNumber(ut.getTaskNumber());
+        jtr.setPoints(ut.getPoints());
+        jtr.setComment(ut.getComment());
+        jtr.setSentTime(ut.getSentTime());
+        jtr.setFileName(ut.getFileName());
+        //jtr.setFileExtension(ut.getFileExtension());
+        jtr.setState(ut.getState().name());
+        return jtr;
     }
 }

@@ -5,9 +5,8 @@ import lombok.Data;
 
 @Data
 public class FeedbackRequest {
-    private Long session;
-    private Long userId;
-    private Long taskNumber;
+    private Long userTasksId;
+    boolean accepted;
     private Integer points;
     private String comment;
 
