@@ -3,6 +3,7 @@ package com.example.olympiad.web.controller;
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.service.ContestService;
+import com.example.olympiad.service.TaskService;
 import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
@@ -13,6 +14,7 @@ import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
+import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.CreatedFile;
 import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
@@ -42,6 +44,7 @@ import java.util.List;
 public class AdminController {
 
     private final ContestService contestService;
+    private final TaskService taskService;
 
 //    @Operation(summary = "Create contest", description = "Return created contest and users")
 //    @ApiResponses(value = {
@@ -128,6 +131,17 @@ public class AdminController {
         return ResponseEntity.ok(contest);
     }
 
+    @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for admin")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
+    })
+    @GetMapping("/contest/user-problems/{session}")
+    public ResponseEntity<List<JudgeTableResponse>> getContestTableBySession(@PathVariable Long session) {
+
+        return ResponseEntity.ok(taskService.getJudgeTableBySession(session));
+
+    }
+
 
     @Operation(summary = "Start contest", description = "Return contest start and end time")
     @ApiResponses(value = {
@@ -167,6 +181,8 @@ public class AdminController {
         return ResponseEntity.ok(contestService
                 .addProblems(addProblemRequest));
     }
+
+
 
     @Operation(summary = "Delete problems", description = "Delete problems from the contest")
     @ApiResponses(value = {
