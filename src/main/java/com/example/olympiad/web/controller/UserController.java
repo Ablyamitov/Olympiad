@@ -76,13 +76,17 @@ public class UserController {
     public ResponseEntity<List<UserTasks>> uploadFile(@RequestParam("session") Long session,
                                                       @RequestParam("userId") Long userId,
                                                       @RequestParam("taskNumber") Long taskNumber,
-                                                      @RequestParam("file") MultipartFile file
+                                                      @RequestParam("file") MultipartFile file,
+                                                      @RequestParam("fileExtension") String fileExtension,
+                                                      @RequestParam("fileName") String fileName
     ) throws IOException {
         UploadFileRequest uploadFileRequest = new UploadFileRequest();
         uploadFileRequest.setSession(session);
         uploadFileRequest.setUserId(userId);
         uploadFileRequest.setTaskNumber(taskNumber);
         uploadFileRequest.setFile(file);
+        uploadFileRequest.setFileExtension(fileExtension);
+        uploadFileRequest.setFileName(fileName);
 
         try {
             return ResponseEntity.ok(taskService.uploadFile(uploadFileRequest));
@@ -114,4 +118,7 @@ public class UserController {
     public ResponseEntity<FeedbackResponse> feedback(@RequestBody FeedbackRequest feedbackRequest) {
         return ResponseEntity.ok(taskService.feedback(feedbackRequest));
     }
+
+
+
 }

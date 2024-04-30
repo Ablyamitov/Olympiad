@@ -37,6 +37,12 @@ public class UserTasks {
     @Column(name = "sent_time")
     private ZonedDateTime sentTime;
 
+    @Column(name = "filename")
+    private String fileName;
+
+    @Column(name = "fileextension")
+    private String fileExtension;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session", insertable = false, updatable = false)
     @JsonBackReference
@@ -46,4 +52,8 @@ public class UserTasks {
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     @JsonBackReference
     private User user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state")
+    private UserTaskState state;
 }

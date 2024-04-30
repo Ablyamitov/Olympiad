@@ -1,7 +1,10 @@
 package com.example.olympiad.service;
 
+import com.example.olympiad.domain.contest.UserTaskState;
 import com.example.olympiad.domain.contest.UserTasks;
+import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.repository.UserTasksRepository;
+import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
 import com.example.olympiad.web.dto.task.UploadFileRequest;
 import com.example.olympiad.web.dto.task.UploadFileResponse;
@@ -20,8 +23,10 @@ import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -30,6 +35,7 @@ import java.util.zip.ZipInputStream;
 public class TaskService {
 
     private final UserTasksRepository userTasksRepository;
+    private final UserService userService;
     private static final String UPLOAD_DIR = "uploads/";
 
 
@@ -56,8 +62,12 @@ public class TaskService {
 
         userTasks.setSentTime(ZonedDateTime.now(ZoneId.of("UTC+3")));
 
+        userTasks.setFileName(uploadFileRequest.getFileName());
+        userTasks.setFileExtension(uploadFileRequest.getFileExtension());
+
         userTasks.setComment(null);
         userTasks.setPoints(null);
+        userTasks.setState(UserTaskState.NOT_EVALUATED);
         userTasksRepository.save(userTasks);
 
 
@@ -152,6 +162,30 @@ public class TaskService {
         feedbackResponse.setComment(userTasks.getComment());
         feedbackResponse.setPoints(userTasks.getPoints());
         return feedbackResponse;
+
+    }
+
+    public List<JudgeTableResponse> getJudgeTableBySession(Long session) {
+        List<UserTasks> userTasks = userTasksRepository.findAllBySession(session);
+        List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
+        for (UserTasks ut: userTasks) {
+            JudgeTableResponse jtr = new JudgeTableResponse();
+            jtr.setId(ut.getId());
+            jtr.setSession(ut.getSession());
+            jtr.setUserName(userService.getByUserId(ut.getUserId()).getUsername());
+            jtr.setTaskNumber(ut.getTaskNumber());
+            jtr.setFileContent(ut.getFileContent());
+            jtr.setPoints(ut.getPoints());
+            jtr.setComment(ut.getComment());
+            jtr.setSentTime(ut.getSentTime());
+            jtr.setFileName(ut.getFileName());
+            jtr.setFileExtension(ut.getFileExtension());
+            jtr.setState(ut.getState().name());
+
+            judgeTableResponses.add(jtr);
+        }
+
+        return judgeTableResponses;
 
     }
 }

@@ -10,5 +10,7 @@ public interface UserTasksRepository extends JpaRepository<UserTasks,Long> {
     List<UserTasks> findAllByUserId(Long id);
     List<UserTasks> findAllByUserIdAndTaskNumber(Long userId,Long taskNumber);
 
+    List<UserTasks> findAllBySession(Long session);
+
     UserTasks findTopByUserIdAndTaskNumberOrderByIdDesc(Long userId,Long taskNumber);
 }
