@@ -45,7 +45,7 @@ public class TaskService {
 
 
     @Transactional
-    public List<UserTasks> uploadFile(UploadFileRequest uploadFileRequest) throws IOException {
+    public List<JudgeTableResponse> uploadFile(UploadFileRequest uploadFileRequest) throws IOException {
 
         UploadFileResponse uploadFileResponse = new UploadFileResponse();
         uploadFileResponse.setSession(uploadFileRequest.getSession());
@@ -57,27 +57,27 @@ public class TaskService {
         uploadFileResponse.setComment(null);
         uploadFileResponse.setPoints(null);
 
-        UserTasks userTasks = new UserTasks();
-        userTasks.setSession(uploadFileRequest.getSession());
-        userTasks.setUserId(uploadFileRequest.getUserId());
-        userTasks.setTaskNumber(uploadFileRequest.getTaskNumber());
+        UserTasks userTask = new UserTasks();
+        userTask.setSession(uploadFileRequest.getSession());
+        userTask.setUserId(uploadFileRequest.getUserId());
+        userTask.setTaskNumber(uploadFileRequest.getTaskNumber());
 
-        userTasks.setFileContent(fileContent);
+        userTask.setFileContent(fileContent);
 
-        userTasks.setSentTime(ZonedDateTime.now(ZoneId.of("UTC+3")));
+        userTask.setSentTime(ZonedDateTime.now(ZoneId.of("UTC+3")));
 
-        userTasks.setFileName(uploadFileRequest.getFileName());
-        userTasks.setFileExtension(uploadFileRequest.getFileExtension());
+        userTask.setFileName(uploadFileRequest.getFileName());
+        userTask.setFileExtension(uploadFileRequest.getFileExtension());
 
-        userTasks.setComment(null);
-        userTasks.setPoints(null);
-        userTasks.setState(UserTaskState.NOT_EVALUATED);
-        userTasksRepository.save(userTasks);
+        userTask.setComment(null);
+        userTask.setPoints(null);
+        userTask.setState(UserTaskState.NOT_EVALUATED);
+        userTasksRepository.save(userTask);
 
 
 
         try {
-            String userDir = UPLOAD_DIR + uploadFileRequest.getUserId().toString() + "/" + userTasks.getId().toString() + "/";
+            String userDir = UPLOAD_DIR + uploadFileRequest.getUserId().toString() + "/" + userTask.getId().toString() + "/";
             Path path = Paths.get(userDir);
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
@@ -92,7 +92,18 @@ public class TaskService {
         }
 
 
-        return userTasksRepository.findAllByUserIdAndTaskNumber(uploadFileRequest.getUserId(), userTasks.getTaskNumber());
+        return getJudgeTableResponses(uploadFileRequest.getUserId(), userTask.getTaskNumber());
+    }
+
+    private List<JudgeTableResponse> getJudgeTableResponses(Long userId, Long taskNumber) {
+        List<UserTasks> userTasks = userTasksRepository
+                .findAllByUserIdAndTaskNumber(userId, taskNumber);
+        List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
+        for (UserTasks ut: userTasks) {
+            JudgeTableResponse jtr = mapToJudgeTableResponse(ut);
+            judgeTableResponses.add(jtr);
+        }
+        return judgeTableResponses;
     }
 
     private void handleFile(InputStream fileStream, String destDir,String fileName) throws IOException, RarException {
@@ -165,8 +176,8 @@ public class TaskService {
         bos.close();
     }
 
-    public List<UserTasks> getAllTasksByUserIdAndTaskNumber(GetAllTasksRequest getAllTasksRequest) {
-        return userTasksRepository.findAllByUserIdAndTaskNumber(getAllTasksRequest.getUserId(), getAllTasksRequest.getTaskNumber());
+    public List<JudgeTableResponse> getAllTasksByUserIdAndTaskNumber(GetAllTasksRequest getAllTasksRequest) {
+        return getJudgeTableResponses(getAllTasksRequest.getUserId(), getAllTasksRequest.getTaskNumber());
     }
 
     @Transactional

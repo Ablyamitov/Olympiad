@@ -1,16 +1,11 @@
 package com.example.olympiad.web.controller;
 
-import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.UserTasks;
-import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
 import com.example.olympiad.repository.UserTasksRepository;
-import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
-import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.task.Download.DownloadRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
-import com.example.olympiad.web.dto.task.feedback.FeedbackResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -42,6 +37,7 @@ public class JudgeController {
     private final Tika tika = new Tika();
     private final TaskService taskService;
     private final UserTasksRepository userTasksRepository;
+
     //Judge
     @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for judge")
     @ApiResponses(value = {
@@ -50,22 +46,8 @@ public class JudgeController {
     @GetMapping("/contest/{session}")
     public ResponseEntity<List<JudgeTableResponse>> getContestTableBySession(@PathVariable Long session) {
 
-            return ResponseEntity.ok(taskService.getJudgeTableBySession(session));
+        return ResponseEntity.ok(taskService.getJudgeTableBySession(session));
 
-    }
-
-    @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for judge from database")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
-            @ApiResponse(responseCode = "404", description = "Not found - File not found",
-                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
-    })
-    @GetMapping("/download/{id}")
-    public ResponseEntity<String> download(@PathVariable Long id) {
-        UserTasks userTask = userTasksRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("File not found with id: " + id));
-
-        return ResponseEntity.ok().body(userTask.getFileContent());
     }
 
 
