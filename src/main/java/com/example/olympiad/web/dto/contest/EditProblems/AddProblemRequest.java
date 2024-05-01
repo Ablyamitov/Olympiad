@@ -4,6 +4,7 @@ import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,8 +17,10 @@ public class AddProblemRequest {
     @NotBlank(message = "Name cannot be blank")
     private String name;
 
-    @NotBlank(message = "Problem cannot be blank")
-    private String problem;
+//    @NotBlank(message = "Problem cannot be blank")
+//    private String problem;
+    private MultipartFile problem;
+//
 
     @Min(value = 0, message = "Points cannot be less than 0")
     private int points;

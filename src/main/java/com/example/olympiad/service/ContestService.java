@@ -19,7 +19,6 @@ import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
-import com.example.olympiad.web.dto.contest.createUsers.CreatedFile;
 import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -27,10 +26,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -94,19 +93,7 @@ public class ContestService {
 
         contestRepository.save(contest);
 
-//        List<Tasks> tasks = new ArrayList<>();
-//        for (ProblemInfo problemInfo : contestRequest.getProblemInfos()) {
-//            Tasks task = new Tasks();
-//            task.setSession(contest.getSession());
-//            task.setName(problemInfo.getName());
-//            task.setTask(problemInfo.getProblem());
-//            task.setPoints(problemInfo.getPoints());
-//
-//            tasks.add(task);
-//            tasksRepository.save(task);
-//        }
-//
-//        contest.setTasks(tasks);
+
         contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
         contestRepository.save(contest);
 
@@ -290,7 +277,7 @@ public class ContestService {
     }
 
     @Transactional
-    public List<Tasks> addProblems(AddProblemRequest addProblemRequest) {
+    public List<Tasks> addProblems(AddProblemRequest addProblemRequest) throws IOException {
         Contest contest = contestRepository.findBySession(addProblemRequest.getSession())
                 .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
 
@@ -298,7 +285,10 @@ public class ContestService {
         Tasks task = new Tasks();
         task.setSession(contest.getSession());
         task.setName(addProblemRequest.getName());
-        task.setTask(addProblemRequest.getProblem());
+
+        //task.setTask(addProblemRequest.getProblem());
+        task.setTask(Base64.getEncoder().encodeToString(addProblemRequest.getProblem().getBytes()));
+
         task.setPoints(addProblemRequest.getPoints());
 
         tasksRepository.save(task);

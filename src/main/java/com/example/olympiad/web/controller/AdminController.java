@@ -24,12 +24,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "Admin controller", description = "Administrator management")
@@ -135,8 +138,23 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
+//    @PostMapping("/addProblems")
+//    public ResponseEntity<List<Tasks>> addProblems(@Valid @RequestBody final AddProblemRequest addProblemRequest) throws IOException {
+//        return ResponseEntity.ok(contestService
+//                .addProblems(addProblemRequest));
+//    }
     @PostMapping("/addProblems")
-    public ResponseEntity<List<Tasks>> addProblems(@Valid @RequestBody final AddProblemRequest addProblemRequest) {
+    public ResponseEntity<List<Tasks>> addProblems(
+            @RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
+            @RequestParam("name") @NotBlank(message = "name cannot be blank") String name,
+            @RequestParam("problem") MultipartFile file,
+            @RequestParam("points") @Min(value = 0, message = "Session must be at least 0") int points
+    ) throws IOException {
+        AddProblemRequest addProblemRequest = new AddProblemRequest();
+        addProblemRequest.setSession(session);
+        addProblemRequest.setName(name);
+        addProblemRequest.setProblem(file);
+        addProblemRequest.setPoints(points);
         return ResponseEntity.ok(contestService
                 .addProblems(addProblemRequest));
     }
