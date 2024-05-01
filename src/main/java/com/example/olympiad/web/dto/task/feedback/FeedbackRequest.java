@@ -12,9 +12,11 @@ public class FeedbackRequest {
 
     boolean accepted;
 
-    @Min(value = 0, message = "Points must be at least 0")
+    @ValidPoints
     private Integer points;
 
     private String comment;
 
 }
+
+
