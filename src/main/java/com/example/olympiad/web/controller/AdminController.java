@@ -8,7 +8,6 @@ import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
-import com.example.olympiad.web.dto.contest.CreateContest.ContestResponse;
 import com.example.olympiad.web.dto.contest.DeleteContestRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
@@ -16,7 +15,6 @@ import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAn
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
-import com.example.olympiad.web.dto.contest.createUsers.CreatedFile;
 import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,15 +23,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 @Tag(name = "Admin controller", description = "Administrator management")
@@ -46,30 +42,6 @@ public class AdminController {
     private final ContestService contestService;
     private final TaskService taskService;
 
-//    @Operation(summary = "Create contest", description = "Return created contest and users")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
-//            @ApiResponse(responseCode = "404", description = "Bad request - Contest already exists",
-//                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
-//    })
-//    @PostMapping("/createContest")
-//    public ResponseEntity<ContestAndFileResponse> createContest(@RequestBody final ContestRequest contestRequest) {
-//        ContestResponse contestResponse = contestService.create(contestRequest);
-//        File file = contestResponse.getFile();
-//
-//        try {
-//            byte[] fileContent = Files.readAllBytes(file.toPath());
-//            ContestAndFileResponse response = new ContestAndFileResponse();
-//            response.setContest(contestResponse.getContest());
-//
-//
-//            response.setFileContent(fileContent);
-//
-//            return ResponseEntity.ok(response);
-//        } catch (IOException e) {
-//            throw new RuntimeException("Error: " + e.getMessage());
-//        }
-//    }
 
     @Operation(summary = "Create contest", description = "Return created contest and users")
     @ApiResponses(value = {
@@ -78,11 +50,10 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/createContest")
-    public ResponseEntity<ContestAndFileResponse> createContest(@RequestBody final ContestRequest contestRequest) {
+    public ResponseEntity<ContestAndFileResponse> createContest(@Valid @RequestBody final ContestRequest contestRequest) {
         ContestAndFileResponse response = contestService.create(contestRequest);
         return ResponseEntity.ok(response);
     }
-
 
 
     @Operation(summary = "Create users for contest", description = "Return created users")
@@ -92,21 +63,9 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/createUsers")
-    public ResponseEntity<FileResponse> createUsers(@RequestBody final CreateUsersRequest createUsersRequest) {
+    public ResponseEntity<FileResponse> createUsers(@Valid @RequestBody final CreateUsersRequest createUsersRequest) {
         FileResponse response = contestService.createUsers(createUsersRequest);
-
         return ResponseEntity.ok(response);
-//        File file = response.getFile();
-//
-//        try {
-//            byte[] fileContent = Files.readAllBytes(file.toPath());
-//            FileResponse fileResponse = new FileResponse();
-//            fileResponse.setFileContent(fileContent);
-//
-//            return ResponseEntity.ok(fileResponse);
-//        } catch (IOException e) {
-//            throw new RuntimeException("Error: " + e.getMessage());
-//        }
     }
 
     @Operation(summary = "Get all contests", description = "Return all contests")
@@ -126,7 +85,7 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @GetMapping("/contest/{session}")
-    public ResponseEntity<Contest> getContestBySession(@PathVariable Long session) {
+    public ResponseEntity<Contest> getContestBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
         Contest contest = contestService.getContestBySession(session);
         return ResponseEntity.ok(contest);
     }
@@ -136,7 +95,7 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
     @GetMapping("/contest/user-problems/{session}")
-    public ResponseEntity<List<JudgeTableResponse>> getContestTableBySession(@PathVariable Long session) {
+    public ResponseEntity<List<JudgeTableResponse>> getContestTableBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
 
         return ResponseEntity.ok(taskService.getJudgeTableBySession(session));
 
@@ -150,7 +109,7 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/startContest")
-    public ResponseEntity<GetStartAndEndContestTimeResponse> startContest(@RequestBody final GetStartAndEndContestTimeRequest getStartAndEndContestTimeRequest) {
+    public ResponseEntity<GetStartAndEndContestTimeResponse> startContest(@Valid @RequestBody final GetStartAndEndContestTimeRequest getStartAndEndContestTimeRequest) {
         return ResponseEntity.ok(contestService
                 .start(getStartAndEndContestTimeRequest.getSession()));
     }
@@ -177,11 +136,10 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/addProblems")
-    public ResponseEntity<List<Tasks>> addProblems(@RequestBody final AddProblemRequest addProblemRequest) {
+    public ResponseEntity<List<Tasks>> addProblems(@Valid @RequestBody final AddProblemRequest addProblemRequest) {
         return ResponseEntity.ok(contestService
                 .addProblems(addProblemRequest));
     }
-
 
 
     @Operation(summary = "Delete problems", description = "Delete problems from the contest")
@@ -191,7 +149,7 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/deleteProblems")
-    public ResponseEntity<List<Tasks>> deleteProblems(@RequestBody final DeleteProblemRequest deleteProblemRequest) {
+    public ResponseEntity<List<Tasks>> deleteProblems(@Valid @RequestBody final DeleteProblemRequest deleteProblemRequest) {
         return ResponseEntity.ok(contestService
                 .deleteProblem(deleteProblemRequest));
     }

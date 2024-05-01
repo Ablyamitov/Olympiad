@@ -2,21 +2,25 @@ package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.UserTaskState;
 import com.example.olympiad.domain.contest.UserTasks;
-import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
-import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.repository.UserTasksRepository;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
+import com.example.olympiad.web.dto.task.Download.DownloadRequest;
 import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
 import com.example.olympiad.web.dto.task.UploadFileRequest;
 import com.example.olympiad.web.dto.task.UploadFileResponse;
 import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
-import com.example.olympiad.web.dto.task.feedback.FeedbackResponse;
 import com.github.junrar.Junrar;
 import com.github.junrar.exception.RarException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -30,18 +34,19 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 @Service
 @RequiredArgsConstructor
 public class TaskService {
+    private final Tika tika = new Tika();
 
     private final UserTasksRepository userTasksRepository;
     private final UserService userService;
-    private static final String UPLOAD_DIR = "uploads/";
-
+    //private static final String UPLOAD_DIR = "uploads/";
+    @Value("${storage.location}")
+    private String UPLOAD_DIR;
 
 
     @Transactional
@@ -75,7 +80,6 @@ public class TaskService {
         userTasksRepository.save(userTask);
 
 
-
         try {
             String userDir = UPLOAD_DIR + uploadFileRequest.getUserId().toString() + "/" + userTask.getId().toString() + "/";
             Path path = Paths.get(userDir);
@@ -99,14 +103,14 @@ public class TaskService {
         List<UserTasks> userTasks = userTasksRepository
                 .findAllByUserIdAndTaskNumber(userId, taskNumber);
         List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
-        for (UserTasks ut: userTasks) {
+        for (UserTasks ut : userTasks) {
             JudgeTableResponse jtr = mapToJudgeTableResponse(ut);
             judgeTableResponses.add(jtr);
         }
         return judgeTableResponses;
     }
 
-    private void handleFile(InputStream fileStream, String destDir,String fileName) throws IOException, RarException {
+    private void handleFile(InputStream fileStream, String destDir, String fileName) throws IOException, RarException {
 
         // Сохраняем InputStream во временный файл
         Path tempPath = Files.createTempFile("temp", null);
@@ -162,7 +166,8 @@ public class TaskService {
                 }
                 zipEntry = zis.getNextEntry();
             }
-        } catch (IOException ignored) {}
+        } catch (IOException ignored) {
+        }
     }
 
 
@@ -183,13 +188,12 @@ public class TaskService {
     @Transactional
     public JudgeTableResponse feedback(FeedbackRequest feedbackRequest) {
         UserTasks ut = userTasksRepository.findById(feedbackRequest.getUserTasksId())
-                .orElseThrow(()-> new EntityNotFoundException("User task not found"));
-        if(feedbackRequest.isAccepted()){
+                .orElseThrow(() -> new EntityNotFoundException("User task not found"));
+        if (feedbackRequest.isAccepted()) {
             ut.setPoints(feedbackRequest.getPoints());
             ut.setComment(feedbackRequest.getComment());
             ut.setState(UserTaskState.ACCEPTED);
-        }
-        else {
+        } else {
             ut.setPoints(0);
             ut.setComment(feedbackRequest.getComment());
             ut.setState(UserTaskState.REJECTED);
@@ -202,10 +206,25 @@ public class TaskService {
         return mapToJudgeTableResponse(ut);
     }
 
+    public ResponseEntity<Resource> downloadFile(DownloadRequest downloadRequest) throws Exception {
+        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
+        Resource resource = new UrlResource(file.toUri());
+
+        if (resource.exists() || resource.isReadable()) {
+            String mimeType = tika.detect(file);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(mimeType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        } else {
+            throw new RuntimeException("Could not read the file!");
+        }
+    }
+
     public List<JudgeTableResponse> getJudgeTableBySession(Long session) {
         List<UserTasks> userTasks = userTasksRepository.findAllBySession(session);
         List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
-        for (UserTasks ut: userTasks) {
+        for (UserTasks ut : userTasks) {
             JudgeTableResponse jtr = mapToJudgeTableResponse(ut);
             judgeTableResponses.add(jtr);
         }

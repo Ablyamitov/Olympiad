@@ -17,6 +17,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.apache.tika.Tika;
 import org.springdoc.api.ErrorMessage;
@@ -53,7 +56,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/welcome")
-    public ResponseEntity<ChangeUserInfoResponse> welcome(@RequestBody UserInfo userInfo) {
+    public ResponseEntity<ChangeUserInfoResponse> welcome(@Valid @RequestBody UserInfo userInfo) {
         return ResponseEntity.ok(userService.changeUserInfo(userInfo));
     }
 
@@ -64,7 +67,7 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @GetMapping("/contest/{session}")
-    public ResponseEntity<Contest> getContestBySession(@PathVariable Long session) {
+    public ResponseEntity<Contest> getContestBySession(@PathVariable @Min(value = 0, message = "Session must be at least 0") Long session) {
         try {
             return ResponseEntity.ok(contestService.getContestOptionalBySession(session));
         } catch (ContestNotStartedException e) {
@@ -80,12 +83,12 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/contest/uploadFile")
-    public ResponseEntity<List<JudgeTableResponse>> uploadFile(@RequestParam("session") Long session,
-                                                               @RequestParam("userId") Long userId,
-                                                               @RequestParam("taskNumber") Long taskNumber,
+    public ResponseEntity<List<JudgeTableResponse>> uploadFile(@RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
+                                                               @RequestParam("userId") @Min(value = 0, message = "userId must be at least 0") Long userId,
+                                                               @RequestParam("taskNumber") @Min(value = 0, message = "taskNumber must be at least 0") Long taskNumber,
                                                                @RequestParam("file") MultipartFile file,
-                                                               @RequestParam("fileExtension") String fileExtension,
-                                                               @RequestParam("fileName") String fileName
+                                                               @RequestParam("fileExtension") @NotBlank(message = "fileExtension cannot be blank") String fileExtension,
+                                                               @RequestParam("fileName") @NotBlank(message = "fileName cannot be blank") String fileName
     ) throws IOException {
         UploadFileRequest uploadFileRequest = new UploadFileRequest();
         uploadFileRequest.setSession(session);
@@ -110,7 +113,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
     @PostMapping("/contest/answers")
-    public ResponseEntity<List<JudgeTableResponse>> getAllTasks(@RequestBody GetAllTasksRequest getAllTasksRequest) {
+    public ResponseEntity<List<JudgeTableResponse>> getAllTasks(@Valid @RequestBody GetAllTasksRequest getAllTasksRequest) {
         return ResponseEntity.ok(taskService.getAllTasksByUserIdAndTaskNumber(getAllTasksRequest));
     }
 
@@ -122,20 +125,21 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/download")
-    public ResponseEntity<Resource> download(@RequestBody final DownloadRequest downloadRequest) throws Exception {
-        //Подправить, засунув в fileContent путь
-        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
-        Resource resource = new UrlResource(file.toUri());
-
-        if (resource.exists() || resource.isReadable()) {
-            String mimeType = tika.detect(file);
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(mimeType))
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                    .body(resource);
-        } else {
-            throw new RuntimeException("Could not read the file!");
-        }
+    public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadRequest downloadRequest) throws Exception {
+//        //Подправить, засунув в fileContent путь
+//        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
+//        Resource resource = new UrlResource(file.toUri());
+//
+//        if (resource.exists() || resource.isReadable()) {
+//            String mimeType = tika.detect(file);
+//            return ResponseEntity.ok()
+//                    .contentType(MediaType.parseMediaType(mimeType))
+//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+//                    .body(resource);
+//        } else {
+//            throw new RuntimeException("Could not read the file!");
+//        }
+        return taskService.downloadFile(downloadRequest);
     }
 
 
