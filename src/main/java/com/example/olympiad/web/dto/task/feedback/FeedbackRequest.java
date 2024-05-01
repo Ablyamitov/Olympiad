@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import lombok.Data;
 
 @Data
+@ValidFeedbackRequest
 public class FeedbackRequest {
 
     @Min(value = 0, message = "UserTasksId must be at least 0")
@@ -12,7 +13,7 @@ public class FeedbackRequest {
 
     boolean accepted;
 
-    @ValidPoints
+
     private Integer points;
 
     private String comment;
