@@ -8,6 +8,7 @@ import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
+import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
 import com.example.olympiad.web.dto.contest.DeleteContestRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Tag(name = "Admin controller", description = "Administrator management")
@@ -52,11 +54,43 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Bad request - Contest already exists",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
+//    @PostMapping("/createContest")
+//    public ResponseEntity<ContestAndFileResponse> createContest(@Valid @RequestBody final ContestRequest contestRequest) {
+//        ContestAndFileResponse response = contestService.create(contestRequest);
+//        return ResponseEntity.ok(response);
+//    }
     @PostMapping("/createContest")
-    public ResponseEntity<ContestAndFileResponse> createContest(@Valid @RequestBody final ContestRequest contestRequest) {
+    public ResponseEntity<ContestAndFileResponse> createContest(
+            @RequestParam("name") String name,
+            @RequestParam("participantCount") int participantCount,
+            @RequestParam("judgeCount") int judgeCount,
+            @RequestParam("usernamePrefix") String usernamePrefix,
+            @RequestParam("duration") String duration,
+            @RequestParam("problemNames") List<String> problemNames,
+            @RequestParam("problemPoints") List<Integer> problemPoints,
+            @RequestParam("problemFiles") List<MultipartFile> problemFiles) throws IOException {
+
+        List<ProblemInfo> problemInfos = new ArrayList<>();
+        for (int i = 0; i < problemNames.size(); i++) {
+            ProblemInfo problemInfo = new ProblemInfo();
+            problemInfo.setName(problemNames.get(i));
+            problemInfo.setProblem(problemFiles.get(i));
+            problemInfo.setPoints(problemPoints.get(i));
+            problemInfos.add(problemInfo);
+        }
+
+        ContestRequest contestRequest = new ContestRequest();
+        contestRequest.setName(name);
+        contestRequest.setParticipantCount(participantCount);
+        contestRequest.setJudgeCount(judgeCount);
+        contestRequest.setUsernamePrefix(usernamePrefix);
+        contestRequest.setDuration(duration);
+        contestRequest.setProblemInfos(problemInfos);
+
         ContestAndFileResponse response = contestService.create(contestRequest);
         return ResponseEntity.ok(response);
     }
+
 
 
     @Operation(summary = "Create users for contest", description = "Return created users")

@@ -69,7 +69,7 @@ public class ContestService {
 
 
     @Transactional
-    public ContestAndFileResponse create(final ContestRequest contestRequest) {
+    public ContestAndFileResponse create(final ContestRequest contestRequest) throws IOException {
 
 
         Contest contest = new Contest();
@@ -301,13 +301,18 @@ public class ContestService {
     }
 
 
-    private List<Tasks> createProblems(Long session, List<ProblemInfo> problemInfos) {
+    private List<Tasks> createProblems(Long session, List<ProblemInfo> problemInfos) throws IOException {
         List<Tasks> tasks = new ArrayList<>();
         for (ProblemInfo problemInfo : problemInfos) {
             Tasks task = new Tasks();
             task.setSession(session);
             task.setName(problemInfo.getName());
-            task.setTask(problemInfo.getProblem());
+
+
+            //task.setTask(problemInfo.getProblem());
+            task.setTask(Base64.getEncoder().encodeToString(problemInfo.getProblem().getBytes()));
+
+
             task.setPoints(problemInfo.getPoints());
 
             tasks.add(task);
