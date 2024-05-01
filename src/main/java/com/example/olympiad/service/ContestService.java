@@ -68,17 +68,114 @@ public class ContestService {
     }
 
 
+//    @Transactional
+//    public ContestAndFileResponse create(final ContestRequest contestRequest) throws IOException {
+//
+//
+//        Contest contest = new Contest();
+//
+//        long maxSession;
+//        if (contestRepository.findContestWithMaxSession().isPresent())
+//            maxSession = contestRepository.findContestWithMaxSession().get().getSession() + 1;
+//        else
+//            maxSession = 1L;
+//        contest.setSession(maxSession);
+//        contest.setName(contestRequest.getName());
+//        contest.setParticipantCount(contestRequest.getParticipantCount());
+//        contest.setJudgeCount(contestRequest.getJudgeCount());
+//        contest.setUsernamePrefix(contestRequest.getUsernamePrefix());
+//        contest.setDuration(contestRequest.getDuration());
+//        contest.setState(ContestState.NOT_STARTED);
+//
+//
+//        Map<User, String> participants = userService.createParticipants(contest.getParticipantCount(), contest.getUsernamePrefix(), contest.getSession());
+//        Map<User, String> judges = userService.createJudges(contest.getJudgeCount(), contest.getUsernamePrefix(), contest.getSession());
+//
+//        contestRepository.save(contest);
+//
+//
+//        contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
+//        contestRepository.save(contest);
+//        byte[] fileContent;
+//        File file = createFile(contest, participants, judges);
+//
+//        try {
+//            assert file != null;
+//            fileContent = Files.readAllBytes(file.toPath());
+//        } catch (IOException e) {
+//            throw new RuntimeException("Error: " + e.getMessage());
+//        }
+//        ContestAndFileResponse response = new ContestAndFileResponse();
+//        response.setContest(contest);
+//        response.setFileContent(fileContent);
+//
+//        if (!file.delete()) log.info("Файл " + file.getName() + " не может быть удален");
+//
+//        return response;
+//    }
+//
+//
+//    @Transactional
+//    public FileResponse createUsers(final CreateUsersRequest createUsersRequest) {
+//        /*if (contestRepository.findBySession(createUsersRequest.getSession()).isPresent()) {
+//            throw new IllegalStateException("Contest already exists.");
+//        }*/
+//        Contest contest = contestRepository.findBySession(createUsersRequest.getSession())
+//                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+//
+//        Map<User, String> participants = userService.createParticipants(createUsersRequest.getParticipantCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getParticipantCount());
+//        Map<User, String> judges = userService.createJudges(createUsersRequest.getJudgeCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getJudgeCount());
+//
+//        contest.setParticipantCount(contest.getParticipantCount() + createUsersRequest.getParticipantCount());
+//        contest.setJudgeCount(contest.getJudgeCount() + createUsersRequest.getJudgeCount());
+//        contestRepository.save(contest);
+//
+//        byte[] fileContent;
+//        File file = createFile(contest, participants, judges);
+//
+//        try {
+//            assert file != null;
+//            fileContent = Files.readAllBytes(file.toPath());
+//        } catch (IOException e) {
+//            throw new RuntimeException("Error: " + e.getMessage());
+//        }
+//        FileResponse fileResponse = new FileResponse();
+//        fileResponse.setFileContent(fileContent);
+//
+//
+//        if (!file.delete()) log.info("Файл " + file.getName() + " не может быть удален");
+//        return fileResponse;
+//    }
+//
+
+
     @Transactional
     public ContestAndFileResponse create(final ContestRequest contestRequest) throws IOException {
+        Contest contest = createContest(contestRequest);
+        Map<User, String> participants = userService.createParticipants(contest.getParticipantCount(), contest.getUsernamePrefix(), contest.getSession());
+        Map<User, String> judges = userService.createJudges(contest.getJudgeCount(), contest.getUsernamePrefix(), contest.getSession());
+        contestRepository.save(contest);
+        contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
+        contestRepository.save(contest);
+        return createContestAndFileResponse(contest, participants, judges);
+    }
 
 
+    @Transactional
+    public FileResponse createUsers(final CreateUsersRequest createUsersRequest) throws IOException {
+        Contest contest = contestRepository.findBySession(createUsersRequest.getSession())
+                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+        Map<User, String> participants = userService.createParticipants(createUsersRequest.getParticipantCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getParticipantCount());
+        Map<User, String> judges = userService.createJudges(createUsersRequest.getJudgeCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getJudgeCount());
+        contest.setParticipantCount(contest.getParticipantCount() + createUsersRequest.getParticipantCount());
+        contest.setJudgeCount(contest.getJudgeCount() + createUsersRequest.getJudgeCount());
+        contestRepository.save(contest);
+        return createFileResponse(contest, participants, judges);
+    }
+
+    private Contest createContest(ContestRequest contestRequest) {
         Contest contest = new Contest();
-
-        long maxSession;
-        if (contestRepository.findContestWithMaxSession().isPresent())
-            maxSession = contestRepository.findContestWithMaxSession().get().getSession() + 1;
-        else
-            maxSession = 1L;
+        long maxSession = contestRepository.findContestWithMaxSession().map(c -> c.getSession() + 1).orElse(1L);
         contest.setSession(maxSession);
         contest.setName(contestRequest.getName());
         contest.setParticipantCount(contestRequest.getParticipantCount());
@@ -86,65 +183,29 @@ public class ContestService {
         contest.setUsernamePrefix(contestRequest.getUsernamePrefix());
         contest.setDuration(contestRequest.getDuration());
         contest.setState(ContestState.NOT_STARTED);
+        return contest;
+    }
 
-
-        Map<User, String> participants = userService.createParticipants(contest.getParticipantCount(), contest.getUsernamePrefix(), contest.getSession());
-        Map<User, String> judges = userService.createJudges(contest.getJudgeCount(), contest.getUsernamePrefix(), contest.getSession());
-
-        contestRepository.save(contest);
-
-
-        contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
-        contestRepository.save(contest);
-
+    private ContestAndFileResponse createContestAndFileResponse(Contest contest, Map<User, String> participants, Map<User, String> judges) throws IOException {
         File file = createFile(contest, participants, judges);
-        byte[] fileContent;
-        try {
-            assert file != null;
-            fileContent = Files.readAllBytes(file.toPath());
-        } catch (IOException e) {
-            throw new RuntimeException("Error: " + e.getMessage());
-        }
+        assert file != null;
+        byte[] fileContent = Files.readAllBytes(file.toPath());
         ContestAndFileResponse response = new ContestAndFileResponse();
         response.setContest(contest);
         response.setFileContent(fileContent);
-
         if (!file.delete()) log.info("Файл " + file.getName() + " не может быть удален");
-
         return response;
     }
 
-
-    public FileResponse createUsers(final CreateUsersRequest createUsersRequest) {
-        /*if (contestRepository.findBySession(createUsersRequest.getSession()).isPresent()) {
-            throw new IllegalStateException("Contest already exists.");
-        }*/
-        Contest contest = contestRepository.findBySession(createUsersRequest.getSession())
-                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
-
-        Map<User, String> participants = userService.createParticipants(createUsersRequest.getParticipantCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getParticipantCount());
-        Map<User, String> judges = userService.createJudges(createUsersRequest.getJudgeCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getJudgeCount());
-
-        contest.setParticipantCount(contest.getParticipantCount() + createUsersRequest.getParticipantCount());
-        contest.setJudgeCount(contest.getJudgeCount() + createUsersRequest.getJudgeCount());
-        contestRepository.save(contest);
-
+    private FileResponse createFileResponse(Contest contest, Map<User, String> participants, Map<User, String> judges) throws IOException {
         File file = createFile(contest, participants, judges);
-        byte[] fileContent;
-        try {
-            assert file != null;
-            fileContent = Files.readAllBytes(file.toPath());
-        } catch (IOException e) {
-            throw new RuntimeException("Error: " + e.getMessage());
-        }
+        assert file != null;
+        byte[] fileContent = Files.readAllBytes(file.toPath());
         FileResponse fileResponse = new FileResponse();
         fileResponse.setFileContent(fileContent);
-
-
         if (!file.delete()) log.info("Файл " + file.getName() + " не может быть удален");
         return fileResponse;
     }
-
     private File createFile(Contest contest, Map<User, String> participants, Map<User, String> judges) {
         Map<User, String> sortedParticipants = participants.entrySet()
                 .stream()
@@ -200,7 +261,8 @@ public class ContestService {
             log.info("Файл " + file.getName() + " создан");
             return file;
         } catch (IOException e) {
-            System.err.println("Ошибка с файлом");
+            log.error("Ошибка с файлом");
+            //System.err.println("Ошибка с файлом");
         }
         return null;
     }

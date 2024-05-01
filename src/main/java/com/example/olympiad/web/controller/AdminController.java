@@ -100,7 +100,7 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/createUsers")
-    public ResponseEntity<FileResponse> createUsers(@Valid @RequestBody final CreateUsersRequest createUsersRequest) {
+    public ResponseEntity<FileResponse> createUsers(@Valid @RequestBody final CreateUsersRequest createUsersRequest) throws IOException {
         FileResponse response = contestService.createUsers(createUsersRequest);
         return ResponseEntity.ok(response);
     }
