@@ -3,6 +3,7 @@ package com.example.olympiad.domain.exception;
 import com.example.olympiad.domain.exception.access.AccessDeniedException;
 import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
 import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
+import com.example.olympiad.domain.exception.entity.ContestStartedYetException;
 import com.example.olympiad.domain.exception.entity.UserNotFoundException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
@@ -95,6 +96,15 @@ public class ControllerAdvice {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorMessage(exception.getMessage()));
     }
+
+    @ExceptionHandler(ContestStartedYetException.class)
+    public ResponseEntity<ErrorMessage> contestStartedYetException(UserNotFoundException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorMessage(exception.getMessage()));
+    }
+
 
 
 }

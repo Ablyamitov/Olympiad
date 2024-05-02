@@ -24,17 +24,12 @@ import lombok.RequiredArgsConstructor;
 import org.apache.tika.Tika;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 @Tag(name = "User controller", description = "User management ")
@@ -87,7 +82,6 @@ public class UserController {
                                                                @RequestParam("userId") @Min(value = 0, message = "userId must be at least 0") Long userId,
                                                                @RequestParam("taskNumber") @Min(value = 0, message = "taskNumber must be at least 0") Long taskNumber,
                                                                @RequestParam("file") MultipartFile file,
-                                                               @RequestParam("fileExtension") @NotBlank(message = "fileExtension cannot be blank") String fileExtension,
                                                                @RequestParam("fileName") @NotBlank(message = "fileName cannot be blank") String fileName
     ) throws IOException {
         UploadFileRequest uploadFileRequest = new UploadFileRequest();
@@ -95,7 +89,7 @@ public class UserController {
         uploadFileRequest.setUserId(userId);
         uploadFileRequest.setTaskNumber(taskNumber);
         uploadFileRequest.setFile(file);
-        uploadFileRequest.setFileExtension(fileExtension);
+        //uploadFileRequest.setFileExtension(fileExtension);
         uploadFileRequest.setFileName(fileName);
 
         try {
@@ -141,7 +135,6 @@ public class UserController {
 //        }
         return taskService.downloadFile(downloadRequest);
     }
-
 
 
 }

@@ -159,7 +159,6 @@ public class UserService {
     }
 
     private String generateRandomString() {
-        if (12 < 1) throw new IllegalArgumentException();
         StringBuilder sb = new StringBuilder(12);
         for (int i = 0; i < 12; i++) {
             int rndCharAt = random.nextInt(DATA_FOR_RANDOM_STRING.length());

@@ -4,6 +4,7 @@ import com.example.olympiad.domain.contest.UserTaskState;
 import com.example.olympiad.domain.contest.UserTasks;
 import com.example.olympiad.repository.UserTasksRepository;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
+import com.example.olympiad.web.dto.task.Download.AdminDownloadProblemRequest;
 import com.example.olympiad.web.dto.task.Download.DownloadRequest;
 import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
 import com.example.olympiad.web.dto.task.UploadFileRequest;
@@ -110,7 +111,7 @@ public class TaskService {
         return judgeTableResponses;
     }
 
-    private void handleFile(InputStream fileStream, String destDir, String fileName) throws IOException, RarException {
+    public void handleFile(InputStream fileStream, String destDir, String fileName) throws IOException, RarException {
 
         // Сохраняем InputStream во временный файл
         Path tempPath = Files.createTempFile("temp", null);
@@ -208,6 +209,15 @@ public class TaskService {
 
     public ResponseEntity<Resource> downloadFile(DownloadRequest downloadRequest) throws Exception {
         Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
+        return getResourceResponseEntity(file);
+    }
+
+    public ResponseEntity<Resource> downloadFile(AdminDownloadProblemRequest adminDownloadProblemRequest) throws Exception {
+        Path file = Paths.get("uploads", adminDownloadProblemRequest.getSession().toString(), adminDownloadProblemRequest.getTaskId().toString(), adminDownloadProblemRequest.getFileName());
+        return getResourceResponseEntity(file);
+    }
+
+    private ResponseEntity<Resource> getResourceResponseEntity(Path file) throws IOException {
         Resource resource = new UrlResource(file.toUri());
 
         if (resource.exists() || resource.isReadable()) {

@@ -5,6 +5,7 @@ import com.example.olympiad.domain.contest.ContestState;
 import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
 import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
+import com.example.olympiad.domain.exception.entity.ContestStartedYetException;
 import com.example.olympiad.domain.mail.EmailDetails;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
@@ -20,6 +21,7 @@ import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
+import com.github.junrar.exception.RarException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,12 +31,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -46,9 +49,13 @@ import java.util.stream.Collectors;
 public class ContestService {
     private final ContestRepository contestRepository;
     private final TasksRepository tasksRepository;
+    private final TaskService taskService;
 
     private final UserService userService;
     private final EmailService emailService;
+
+    @Value("${storage.location}")
+    private String UPLOAD_DIR;
 
     @Value("${spring.mail.username}")
     private String toAddress;
@@ -155,8 +162,8 @@ public class ContestService {
         Map<User, String> participants = userService.createParticipants(contest.getParticipantCount(), contest.getUsernamePrefix(), contest.getSession());
         Map<User, String> judges = userService.createJudges(contest.getJudgeCount(), contest.getUsernamePrefix(), contest.getSession());
         contestRepository.save(contest);
-        contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
-        contestRepository.save(contest);
+        //contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
+        //contestRepository.save(contest);
         return createContestAndFileResponse(contest, participants, judges);
     }
 
@@ -206,6 +213,7 @@ public class ContestService {
         if (!file.delete()) log.info("Файл " + file.getName() + " не может быть удален");
         return fileResponse;
     }
+
     private File createFile(Contest contest, Map<User, String> participants, Map<User, String> judges) {
         Map<User, String> sortedParticipants = participants.entrySet()
                 .stream()
@@ -333,6 +341,9 @@ public class ContestService {
     public String changeDuration(ChangeDurationRequest changeDurationRequest) {
         Contest contest = contestRepository.findBySession(changeDurationRequest.getSession())
                 .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+        if (contest.getState() == ContestState.IN_PROGRESS){
+            throw new ContestStartedYetException("Contest started yet");
+        }
         contest.setDuration(changeDurationRequest.getNewDuration());
         contestRepository.save(contest);
         return contest.getDuration();
@@ -348,12 +359,46 @@ public class ContestService {
         task.setSession(contest.getSession());
         task.setName(addProblemRequest.getName());
 
+//        try {
+//            String userDir = UPLOAD_DIR + task.getSession().toString() + "/" + task.getId().toString() + "/";
+//            Path path = Paths.get(userDir);
+//            if (!Files.exists(path)) {
+//                Files.createDirectories(path);
+//            }
+//
+//             taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
+//                    userDir,
+//                     addProblemRequest.getProblem().getOriginalFilename());
+//            //unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
+//        } catch (IOException | RarException e) {
+//            throw new IOException(e.getMessage());
+//        }
+
         //task.setTask(addProblemRequest.getProblem());
         task.setTask(Base64.getEncoder().encodeToString(addProblemRequest.getProblem().getBytes()));
+
 
         task.setPoints(addProblemRequest.getPoints());
 
         tasksRepository.save(task);
+
+
+        //
+        try {
+            String userDir = UPLOAD_DIR + task.getSession().toString() + "/" + task.getId().toString() + "/";
+            Path path = Paths.get(userDir);
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+
+            taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
+                    userDir,
+                    addProblemRequest.getProblem().getOriginalFilename());
+            //unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
+        } catch (IOException | RarException e) {
+            throw new IOException(e.getMessage());
+        }
+        //
 
         List<Tasks> problems = tasksRepository.findAllBySession(contest.getSession());
         contest.setTasks(problems);

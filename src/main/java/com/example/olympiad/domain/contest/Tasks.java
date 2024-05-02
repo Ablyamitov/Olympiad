@@ -24,6 +24,7 @@ public class Tasks {
     private String name;
 
     @Column(name = "task")
+    @JsonIgnore
     private String task;
 
     @Column(name = "points")

@@ -17,6 +17,8 @@ import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAn
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
+import com.example.olympiad.web.dto.task.Download.AdminDownloadProblemRequest;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,13 +30,13 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Tag(name = "Admin controller", description = "Administrator management")
@@ -54,43 +56,24 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Bad request - Contest already exists",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-//    @PostMapping("/createContest")
-//    public ResponseEntity<ContestAndFileResponse> createContest(@Valid @RequestBody final ContestRequest contestRequest) {
-//        ContestAndFileResponse response = contestService.create(contestRequest);
-//        return ResponseEntity.ok(response);
-//    }
     @PostMapping("/createContest")
-    public ResponseEntity<ContestAndFileResponse> createContest(
-            @RequestParam("name") String name,
-            @RequestParam("participantCount") int participantCount,
-            @RequestParam("judgeCount") int judgeCount,
-            @RequestParam("usernamePrefix") String usernamePrefix,
-            @RequestParam("duration") String duration,
-            @RequestParam("problemNames") List<String> problemNames,
-            @RequestParam("problemPoints") List<Integer> problemPoints,
-            @RequestParam("problemFiles") List<MultipartFile> problemFiles) throws IOException {
-
-        List<ProblemInfo> problemInfos = new ArrayList<>();
-        for (int i = 0; i < problemNames.size(); i++) {
-            ProblemInfo problemInfo = new ProblemInfo();
-            problemInfo.setName(problemNames.get(i));
-            problemInfo.setProblem(problemFiles.get(i));
-            problemInfo.setPoints(problemPoints.get(i));
-            problemInfos.add(problemInfo);
-        }
-
-        ContestRequest contestRequest = new ContestRequest();
-        contestRequest.setName(name);
-        contestRequest.setParticipantCount(participantCount);
-        contestRequest.setJudgeCount(judgeCount);
-        contestRequest.setUsernamePrefix(usernamePrefix);
-        contestRequest.setDuration(duration);
-        contestRequest.setProblemInfos(problemInfos);
-
+    public ResponseEntity<ContestAndFileResponse> createContest(@Valid @RequestBody final ContestRequest contestRequest) throws IOException {
         ContestAndFileResponse response = contestService.create(contestRequest);
         return ResponseEntity.ok(response);
     }
 
+
+//    @PostMapping("/createContest")
+//    public ResponseEntity<ContestAndFileResponse> createContest(
+//            @RequestParam("name") String name,
+//            @RequestParam("participantCount") int participantCount,
+//            @RequestParam("judgeCount") int judgeCount,
+//            @RequestParam("usernamePrefix") String usernamePrefix,
+//            @RequestParam("duration") String duration,
+//            @RequestParam("ProblemInfo") ProblemInfo[] problemNames) throws IOException {
+//
+//        return null;
+//    }
 
 
     @Operation(summary = "Create users for contest", description = "Return created users")
@@ -193,6 +176,30 @@ public class AdminController {
                 .addProblems(addProblemRequest));
     }
 
+
+    @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for admin from localstorage")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - File not found",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
+    @PostMapping("/download")
+    public ResponseEntity<Resource> download(@Valid @RequestBody final AdminDownloadProblemRequest adminDownloadProblemRequest) throws Exception {
+//        //Подправить, засунув в fileContent путь
+//        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
+//        Resource resource = new UrlResource(file.toUri());
+//
+//        if (resource.exists() || resource.isReadable()) {
+//            String mimeType = tika.detect(file);
+//            return ResponseEntity.ok()
+//                    .contentType(MediaType.parseMediaType(mimeType))
+//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+//                    .body(resource);
+//        } else {
+//            throw new RuntimeException("Could not read the file!");
+//        }
+        return taskService.downloadFile(adminDownloadProblemRequest);
+    }
 
     @Operation(summary = "Delete problems", description = "Delete problems from the contest")
     @ApiResponses(value = {
