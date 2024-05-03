@@ -8,17 +8,16 @@ import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
-import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
 import com.example.olympiad.web.dto.contest.DeleteContestRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
+import com.example.olympiad.web.dto.contest.ResultTable.ResultTableResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
-import com.example.olympiad.web.dto.task.Download.AdminDownloadProblemRequest;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -62,18 +61,6 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-
-//    @PostMapping("/createContest")
-//    public ResponseEntity<ContestAndFileResponse> createContest(
-//            @RequestParam("name") String name,
-//            @RequestParam("participantCount") int participantCount,
-//            @RequestParam("judgeCount") int judgeCount,
-//            @RequestParam("usernamePrefix") String usernamePrefix,
-//            @RequestParam("duration") String duration,
-//            @RequestParam("ProblemInfo") ProblemInfo[] problemNames) throws IOException {
-//
-//        return null;
-//    }
 
 
     @Operation(summary = "Create users for contest", description = "Return created users")
@@ -121,6 +108,17 @@ public class AdminController {
 
     }
 
+    @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for admin")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
+    })
+    @GetMapping("/contest/user-problems/result/{session}")
+    public ResponseEntity<ResultTableResponse> getContestResultTableBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
+
+        return ResponseEntity.ok(taskService.getResultTableResponse(session));
+
+    }
+
 
     @Operation(summary = "Start contest", description = "Return contest start and end time")
     @ApiResponses(value = {
@@ -155,23 +153,22 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-//    @PostMapping("/addProblems")
-//    public ResponseEntity<List<Tasks>> addProblems(@Valid @RequestBody final AddProblemRequest addProblemRequest) throws IOException {
-//        return ResponseEntity.ok(contestService
-//                .addProblems(addProblemRequest));
-//    }
     @PostMapping("/addProblems")
     public ResponseEntity<List<Tasks>> addProblems(
             @RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
-            @RequestParam("name") @NotBlank(message = "name cannot be blank") String name,
-            @RequestParam("problem") MultipartFile file,
+            @RequestParam(value = "htmlName", required = false) String htmlName,
+            @RequestParam(value = "htmlContent") String htmlContent,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "problem", required = false) MultipartFile file,
             @RequestParam("points") @Min(value = 0, message = "Session must be at least 0") int points
     ) throws IOException {
         AddProblemRequest addProblemRequest = new AddProblemRequest();
         addProblemRequest.setSession(session);
+        addProblemRequest.setHtmlContent(htmlContent);
         addProblemRequest.setName(name);
         addProblemRequest.setProblem(file);
         addProblemRequest.setPoints(points);
+        addProblemRequest.setHtmlName(htmlName);
         return ResponseEntity.ok(contestService
                 .addProblems(addProblemRequest));
     }
@@ -184,21 +181,8 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/download")
-    public ResponseEntity<Resource> download(@Valid @RequestBody final AdminDownloadProblemRequest adminDownloadProblemRequest) throws Exception {
-//        //Подправить, засунув в fileContent путь
-//        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
-//        Resource resource = new UrlResource(file.toUri());
-//
-//        if (resource.exists() || resource.isReadable()) {
-//            String mimeType = tika.detect(file);
-//            return ResponseEntity.ok()
-//                    .contentType(MediaType.parseMediaType(mimeType))
-//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-//                    .body(resource);
-//        } else {
-//            throw new RuntimeException("Could not read the file!");
-//        }
-        return taskService.downloadFile(adminDownloadProblemRequest);
+    public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadTaskRequest downloadTaskRequest) throws Exception {
+        return taskService.downloadFile(downloadTaskRequest);
     }
 
     @Operation(summary = "Delete problems", description = "Delete problems from the contest")

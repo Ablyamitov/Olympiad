@@ -26,6 +26,6 @@ public class ContestRequest {
     @NotBlank(message = "Duration cannot be blank")
     private String duration;
 
-    List<ProblemInfo> problemInfos;
+    //List<ProblemInfo> problemInfos;
 
 }

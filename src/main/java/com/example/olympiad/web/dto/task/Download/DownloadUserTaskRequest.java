@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class DownloadRequest {
+public class DownloadUserTaskRequest {
 
     @Min(value = 0, message = "UserId cannot be less than 0")
     private Long userId;

@@ -8,7 +8,7 @@ create table if not exists user_tasks
     fileContent text not null,
     points int,
     comment text,
-    sent_time timestamp,
+    sent_time varchar(30),
     constraint fk_tasks_contest foreign key (session) references contest (session) on delete cascade on update no action,
     constraint fk_tasks_users foreign key (user_id) references users (id) on delete cascade on update no action
     );

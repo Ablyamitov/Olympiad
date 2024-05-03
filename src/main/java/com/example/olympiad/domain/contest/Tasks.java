@@ -17,14 +17,19 @@ public class Tasks {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "task_id")
+    private Long taskId;
+
     @Column(name = "session")
     private Long session;
+
+    @Column(name = "html_name")
+    private String htmlName;
 
     @Column(name = "name")
     private String name;
 
     @Column(name = "task")
-    @JsonIgnore
     private String task;
 
     @Column(name = "points")

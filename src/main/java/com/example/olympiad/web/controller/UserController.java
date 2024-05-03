@@ -6,7 +6,8 @@ import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.service.UserService;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
-import com.example.olympiad.web.dto.task.Download.DownloadRequest;
+import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
+import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
 import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
 import com.example.olympiad.web.dto.task.UploadFileRequest;
 import com.example.olympiad.web.dto.user.UserInfo.ChangeUserInfoResponse;
@@ -119,22 +120,21 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/download")
-    public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadRequest downloadRequest) throws Exception {
-//        //Подправить, засунув в fileContent путь
-//        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
-//        Resource resource = new UrlResource(file.toUri());
-//
-//        if (resource.exists() || resource.isReadable()) {
-//            String mimeType = tika.detect(file);
-//            return ResponseEntity.ok()
-//                    .contentType(MediaType.parseMediaType(mimeType))
-//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-//                    .body(resource);
-//        } else {
-//            throw new RuntimeException("Could not read the file!");
-//        }
+    public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadUserTaskRequest downloadRequest) throws Exception {
         return taskService.downloadFile(downloadRequest);
     }
 
+
+
+    @Operation(summary = "Get task file content", description = "Returns a file content task for participant from localstorage")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - File not found",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
+    @PostMapping("/download-task")
+    public ResponseEntity<Resource> downloadTask(@Valid @RequestBody final DownloadTaskRequest downloadTaskRequest) throws Exception {
+        return taskService.downloadFile(downloadTaskRequest);
+    }
 
 }

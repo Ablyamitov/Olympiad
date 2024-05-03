@@ -1,11 +1,22 @@
 package com.example.olympiad.service;
 
+import com.example.olympiad.domain.contest.Contest;
+import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.domain.contest.UserTaskState;
 import com.example.olympiad.domain.contest.UserTasks;
+import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
+import com.example.olympiad.domain.user.User;
+import com.example.olympiad.repository.ContestRepository;
+import com.example.olympiad.repository.TasksRepository;
+import com.example.olympiad.repository.UserRepository;
 import com.example.olympiad.repository.UserTasksRepository;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
-import com.example.olympiad.web.dto.task.Download.AdminDownloadProblemRequest;
-import com.example.olympiad.web.dto.task.Download.DownloadRequest;
+import com.example.olympiad.web.dto.contest.ResultTable.AnswerStatus;
+import com.example.olympiad.web.dto.contest.ResultTable.ResultTableResponse;
+import com.example.olympiad.web.dto.contest.ResultTable.UserAnswers;
+import com.example.olympiad.web.dto.contest.ResultTable.Users;
+import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
+import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
 import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
 import com.example.olympiad.web.dto.task.UploadFileRequest;
 import com.example.olympiad.web.dto.task.UploadFileResponse;
@@ -29,6 +40,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -45,6 +57,9 @@ public class TaskService {
 
     private final UserTasksRepository userTasksRepository;
     private final UserService userService;
+    private final ContestRepository contestRepository;
+    private final UserRepository userRepository;
+    private final TasksRepository tasksRepository;
     //private static final String UPLOAD_DIR = "uploads/";
     @Value("${storage.location}")
     private String UPLOAD_DIR;
@@ -53,6 +68,8 @@ public class TaskService {
     @Transactional
     public List<JudgeTableResponse> uploadFile(UploadFileRequest uploadFileRequest) throws IOException {
 
+        Contest contest = contestRepository.findBySession(uploadFileRequest.getSession())
+                .orElseThrow(()->new ContestNotFoundException("Contest not found"));
         UploadFileResponse uploadFileResponse = new UploadFileResponse();
         uploadFileResponse.setSession(uploadFileRequest.getSession());
         uploadFileResponse.setUserId(uploadFileRequest.getUserId());
@@ -64,13 +81,28 @@ public class TaskService {
         uploadFileResponse.setPoints(null);
 
         UserTasks userTask = new UserTasks();
+        Long idInSession = userTasksRepository.countBySession(uploadFileRequest.getSession())+1;
+        userTask.setIdInSession(idInSession);
         userTask.setSession(uploadFileRequest.getSession());
         userTask.setUserId(uploadFileRequest.getUserId());
         userTask.setTaskNumber(uploadFileRequest.getTaskNumber());
 
         userTask.setFileContent(fileContent);
 
-        userTask.setSentTime(ZonedDateTime.now(ZoneId.of("UTC+3")));
+
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC+3"));
+        ZonedDateTime startTime = contest.getStartTime();
+        Duration duration = Duration.between(startTime, now);
+        long hours = duration.toHours();
+        long minutes = duration.minusHours(hours).toMinutes();
+        long seconds = duration.minusHours(hours).minusMinutes(minutes).getSeconds();
+
+        String timeDifference = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+
+
+        userTask.setSentTime(timeDifference);
+
+
 
         userTask.setFileName(uploadFileRequest.getFileName());
         userTask.setFileExtension(uploadFileRequest.getFileExtension());
@@ -82,7 +114,7 @@ public class TaskService {
 
 
         try {
-            String userDir = UPLOAD_DIR + uploadFileRequest.getUserId().toString() + "/" + userTask.getId().toString() + "/";
+            String userDir = UPLOAD_DIR +"user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + userTask.getId().toString() + "/";
             Path path = Paths.get(userDir);
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
@@ -102,7 +134,7 @@ public class TaskService {
 
     private List<JudgeTableResponse> getJudgeTableResponses(Long userId, Long taskNumber) {
         List<UserTasks> userTasks = userTasksRepository
-                .findAllByUserIdAndTaskNumber(userId, taskNumber);
+                .findAllByUserIdAndTaskNumberOrderByIdInSession(userId, taskNumber);
         List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
         for (UserTasks ut : userTasks) {
             JudgeTableResponse jtr = mapToJudgeTableResponse(ut);
@@ -207,13 +239,13 @@ public class TaskService {
         return mapToJudgeTableResponse(ut);
     }
 
-    public ResponseEntity<Resource> downloadFile(DownloadRequest downloadRequest) throws Exception {
-        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
+    public ResponseEntity<Resource> downloadFile(DownloadUserTaskRequest downloadRequest) throws Exception {
+        Path file = Paths.get("uploads","user-tasks", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
         return getResourceResponseEntity(file);
     }
 
-    public ResponseEntity<Resource> downloadFile(AdminDownloadProblemRequest adminDownloadProblemRequest) throws Exception {
-        Path file = Paths.get("uploads", adminDownloadProblemRequest.getSession().toString(), adminDownloadProblemRequest.getTaskId().toString(), adminDownloadProblemRequest.getFileName());
+    public ResponseEntity<Resource> downloadFile(DownloadTaskRequest downloadTaskRequest) throws Exception {
+        Path file = Paths.get("uploads", "tasks", downloadTaskRequest.getSession().toString(), downloadTaskRequest.getTaskId().toString(), downloadTaskRequest.getFileName());
         return getResourceResponseEntity(file);
     }
 
@@ -232,7 +264,7 @@ public class TaskService {
     }
 
     public List<JudgeTableResponse> getJudgeTableBySession(Long session) {
-        List<UserTasks> userTasks = userTasksRepository.findAllBySession(session);
+        List<UserTasks> userTasks = userTasksRepository.findAllBySessionOrderByIdInSession(session);
         List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
         for (UserTasks ut : userTasks) {
             JudgeTableResponse jtr = mapToJudgeTableResponse(ut);
@@ -246,6 +278,7 @@ public class TaskService {
     private JudgeTableResponse mapToJudgeTableResponse(UserTasks ut) {
         JudgeTableResponse jtr = new JudgeTableResponse();
         jtr.setId(ut.getId());
+        jtr.setAnswerId(ut.getIdInSession());
         jtr.setSession(ut.getSession());
         jtr.setUserId(ut.getUserId());
         jtr.setUserName(userService.getByUserId(ut.getUserId()).getUsername());
@@ -257,5 +290,60 @@ public class TaskService {
         //jtr.setFileExtension(ut.getFileExtension());
         jtr.setState(ut.getState().name());
         return jtr;
+    }
+
+    public ResultTableResponse getResultTableResponse(Long session) {
+        ResultTableResponse resultTableResponse = new ResultTableResponse();
+        List<User> fullUsers = userRepository.findAllBySession(session);
+        int tasksCount = tasksRepository.findAllBySession(session).size();
+        List<Users> users = new ArrayList<>();
+        for (User u: fullUsers) {
+            Users userInfo = new Users();
+            userInfo.setName(u.getName());
+            userInfo.setSurname(u.getSurname());
+            userInfo.setEmail(u.getEmail());
+
+            List<UserTasks> userTasks = userTasksRepository.findAllLatestTasksBySessionAndUserId(u.getSession(),u.getId());
+            List<UserAnswers> userAnswers = new ArrayList<>();
+
+            int totalPoints = 0;
+            for (int taskNumber = 0; taskNumber < tasksCount; taskNumber++) {
+                UserAnswers userAnswer = new UserAnswers();
+                if(taskNumber+1 != userTasks.get(taskNumber).getTaskNumber()){
+                    userAnswer.setTaskNumber((long) (taskNumber+1));
+                    userAnswer.setAnswerStatus(AnswerStatus.NOT_SENT.name());
+                    userAnswer.setPoints(null);
+                }
+                else {
+                    userAnswer.setTaskNumber(userTasks.get(taskNumber).getTaskNumber());
+                    if(userTasks.get(taskNumber).getState()==UserTaskState.NOT_EVALUATED){
+                        userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
+                        userAnswer.setPoints(null);
+                    }
+                    else {
+                        userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
+                        userAnswer.setPoints(userTasks.get(taskNumber).getPoints());
+                        totalPoints+=userAnswer.getPoints();
+                    }
+                }
+
+                userAnswers.add(userAnswer);
+            }
+            userInfo.setUserAnswers(userAnswers);
+
+
+
+
+            userInfo.setSolvedTasksCount(userTasks.size());
+            userInfo.setTotalPoints(totalPoints);
+
+
+            users.add(userInfo);
+        }
+        resultTableResponse.setUsers(users);
+        resultTableResponse.setTasksCount(tasksCount);
+        //resultTableResponse.setCurrentTime(ZonedDateTime.now(ZoneId.of("UTC+3")));
+
+        return resultTableResponse;
     }
 }

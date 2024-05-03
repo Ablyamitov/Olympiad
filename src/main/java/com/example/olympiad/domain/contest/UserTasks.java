@@ -17,6 +17,9 @@ public class UserTasks {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "id_in_session")
+    private Long idInSession;
+
     @Column(name = "session", nullable = false)
     private Long session;
 
@@ -36,13 +39,15 @@ public class UserTasks {
     private String comment;
 
     @Column(name = "sent_time")
-    private ZonedDateTime sentTime;
+    private String sentTime;
 
     @Column(name = "filename")
     private String fileName;
 
     @Column(name = "fileextension")
     private String fileExtension;
+
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session", insertable = false, updatable = false)

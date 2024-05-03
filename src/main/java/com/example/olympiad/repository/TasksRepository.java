@@ -24,6 +24,8 @@ public interface TasksRepository extends JpaRepository<Tasks, Long> {
 
     LinkedList<Tasks> findAllBySession(Long session);
 
+    Long countBySession(Long session);
+
 
 }
 

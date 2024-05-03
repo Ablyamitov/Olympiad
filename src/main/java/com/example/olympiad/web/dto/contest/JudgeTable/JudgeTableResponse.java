@@ -13,6 +13,8 @@ public class JudgeTableResponse {
 
     private Long id;
 
+    private Long answerId;
+
     private Long session;
 
     private Long userId;
@@ -26,7 +28,7 @@ public class JudgeTableResponse {
 
     private String comment;
 
-    private ZonedDateTime sentTime;
+    private String sentTime;
 
     private String fileName;
 

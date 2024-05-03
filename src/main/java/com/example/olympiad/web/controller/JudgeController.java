@@ -3,7 +3,8 @@ package com.example.olympiad.web.controller;
 import com.example.olympiad.repository.UserTasksRepository;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
-import com.example.olympiad.web.dto.task.Download.DownloadRequest;
+import com.example.olympiad.web.dto.contest.ResultTable.ResultTableResponse;
+import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,7 +54,7 @@ public class JudgeController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/download")
-    public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadRequest downloadRequest) throws Exception {
+    public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadUserTaskRequest downloadRequest) throws Exception {
 //        //Подправить, засунув в fileContent путь
 //        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
 //        Resource resource = new UrlResource(file.toUri());
@@ -80,5 +81,16 @@ public class JudgeController {
     @PostMapping("/feedback")
     public ResponseEntity<JudgeTableResponse> feedback(@Valid @RequestBody FeedbackRequest feedbackRequest) {
         return ResponseEntity.ok(taskService.feedback(feedbackRequest));
+    }
+
+    @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for admin")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
+    })
+    @GetMapping("/contest/user-problems/result/{session}")
+    public ResponseEntity<ResultTableResponse> getContestResultTableBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
+
+        return ResponseEntity.ok(taskService.getResultTableResponse(session));
+
     }
 }

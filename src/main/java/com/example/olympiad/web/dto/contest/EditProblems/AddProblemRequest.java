@@ -14,6 +14,11 @@ public class AddProblemRequest {
     @Min(value = 0, message = "Session cannot be less than 0")
     private Long session;
 
+    @NotBlank(message = "htmlName cannot be blank")
+    private String htmlName;
+
+    private String htmlContent;
+
     @NotBlank(message = "Name cannot be blank")
     private String name;
 

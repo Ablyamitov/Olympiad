@@ -38,7 +38,8 @@ create table if not exists tasks
 (
     id bigserial primary key,
     session bigint not null,
-    name varchar(255) not null,
+    html_name varchar(255) not null,
+    name varchar(255),
     task text not null,
     points int not null,
     constraint fk_tasks_contest foreign key (session) references contest (session) on delete cascade on update no action

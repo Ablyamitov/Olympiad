@@ -356,26 +356,12 @@ public class ContestService {
 
 
         Tasks task = new Tasks();
+        Long idInSession = tasksRepository.countBySession(addProblemRequest.getSession())+1;
+        task.setTaskId(idInSession);
         task.setSession(contest.getSession());
+        task.setTask(addProblemRequest.getHtmlContent());
         task.setName(addProblemRequest.getName());
-
-//        try {
-//            String userDir = UPLOAD_DIR + task.getSession().toString() + "/" + task.getId().toString() + "/";
-//            Path path = Paths.get(userDir);
-//            if (!Files.exists(path)) {
-//                Files.createDirectories(path);
-//            }
-//
-//             taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
-//                    userDir,
-//                     addProblemRequest.getProblem().getOriginalFilename());
-//            //unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
-//        } catch (IOException | RarException e) {
-//            throw new IOException(e.getMessage());
-//        }
-
-        //task.setTask(addProblemRequest.getProblem());
-        task.setTask(Base64.getEncoder().encodeToString(addProblemRequest.getProblem().getBytes()));
+        task.setHtmlName(addProblemRequest.getHtmlName());
 
 
         task.setPoints(addProblemRequest.getPoints());
@@ -384,19 +370,21 @@ public class ContestService {
 
 
         //
-        try {
-            String userDir = UPLOAD_DIR + task.getSession().toString() + "/" + task.getId().toString() + "/";
-            Path path = Paths.get(userDir);
-            if (!Files.exists(path)) {
-                Files.createDirectories(path);
-            }
+        if(addProblemRequest.getName() != null) {
+            try {
+                String userDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + task.getId().toString() + "/";
+                Path path = Paths.get(userDir);
+                if (!Files.exists(path)) {
+                    Files.createDirectories(path);
+                }
 
-            taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
-                    userDir,
-                    addProblemRequest.getProblem().getOriginalFilename());
-            //unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
-        } catch (IOException | RarException e) {
-            throw new IOException(e.getMessage());
+                taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
+                        userDir,
+                        addProblemRequest.getProblem().getOriginalFilename());
+                //unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
+            } catch (IOException | RarException e) {
+                throw new IOException(e.getMessage());
+            }
         }
         //
 

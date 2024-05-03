@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class AdminDownloadProblemRequest {
+public class DownloadTaskRequest {
     @Min(value = 0, message = "session cannot be less than 0")
     private Long session;
 
