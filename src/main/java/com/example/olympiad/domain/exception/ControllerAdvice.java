@@ -98,7 +98,7 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(ContestStartedYetException.class)
-    public ResponseEntity<ErrorMessage> contestStartedYetException(UserNotFoundException exception) {
+    public ResponseEntity<ErrorMessage> contestStartedYetException(ContestStartedYetException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

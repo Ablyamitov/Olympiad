@@ -279,6 +279,9 @@ public class ContestService {
         Contest contest = contestRepository.findBySession(contestSession)
                 .orElseThrow(() ->
                         new ContestNotFoundException("Contest not found."));
+        if (contest.getStartTime() != null){
+            throw new ContestStartedYetException("Contest have started yet");
+        }
         ZonedDateTime startTime = ZonedDateTime.now(ZoneId.of("UTC+3")); // Текущее время
 
         //ZonedDateTime endTime = startTime.plus(Duration.ofSeconds(contest.getDuration()));
