@@ -46,8 +46,6 @@ public class Contest {
     @Column(name = "end_time")
     private ZonedDateTime endTime;
 
-    //@OneToMany(mappedBy = "contest", cascade = CascadeType.ALL)
-//    @OneToMany(mappedBy = "contest", fetch = FetchType.EAGER)
     @OneToMany(mappedBy = "contest", fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<Tasks> tasks;
@@ -56,20 +54,20 @@ public class Contest {
     @Column(name = "state")
     private ContestState state;
 
-    @Override
-    public String toString() {
-        return "Contest{" +
-                "id=" + id +
-                ", session=" + session +
-                ", name='" + name + '\'' +
-                ", participantCount=" + participantCount +
-                ", judgeCount=" + judgeCount +
-                ", usernamePrefix='" + usernamePrefix + '\'' +
-                ", duration='" + duration + '\'' +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                ", tasks=" + tasks +
-                ", state=" + state +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "Contest{" +
+//                "id=" + id +
+//                ", session=" + session +
+//                ", name='" + name + '\'' +
+//                ", participantCount=" + participantCount +
+//                ", judgeCount=" + judgeCount +
+//                ", usernamePrefix='" + usernamePrefix + '\'' +
+//                ", duration='" + duration + '\'' +
+//                ", startTime=" + startTime +
+//                ", endTime=" + endTime +
+//                ", tasks=" + tasks +
+//                ", state=" + state +
+//                '}';
+//    }
 }

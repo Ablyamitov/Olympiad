@@ -11,13 +11,14 @@ import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.TasksRepository;
 import com.example.olympiad.service.mail.EmailService;
-import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
+import com.example.olympiad.web.dto.contest.GetAllContests.ContestsInfo;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
 import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
+import com.example.olympiad.web.dto.contest.GetAllContests.GetAllContestsResponse;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
@@ -28,6 +29,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -323,15 +328,29 @@ public class ContestService {
         contestRepository.delete(contest);
     }
 
-    public List<AllContestsNameSessionResponse> getAllContests() {
-        return contestRepository.findAll().stream()
-                .distinct()
-                .sorted(Comparator.comparing(Contest::getSession))
-                .map(contest -> new AllContestsNameSessionResponse(
+    public GetAllContestsResponse getAllContests(Integer page) {
+        int pageSize = 6;
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by("session"));
+
+        Page<Contest> pagedResult = contestRepository.findAll(pageable);
+
+        List<ContestsInfo> contests = pagedResult.stream()
+                .map(contest -> new ContestsInfo(
                         contest.getName(),
                         contest.getSession(),
-                        contest.getState()))
+                        contest.getState(),
+                        contest.getDuration(),
+                        contest.getStartTime(),
+                        contest.getEndTime()))
                 .collect(Collectors.toList());
+
+        Long count = contestRepository.count();
+
+        GetAllContestsResponse response = new GetAllContestsResponse();
+        response.setContestsInfos(contests);
+        response.setCount(count);
+
+        return response;
     }
 
     public Contest getContestBySession(Long session) {

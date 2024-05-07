@@ -4,13 +4,15 @@ import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
-import com.example.olympiad.web.dto.contest.AllContestsNameSessionResponse;
+import com.example.olympiad.web.dto.contest.GetAllContests.ContestsInfo;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.DeleteContestRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
+import com.example.olympiad.web.dto.contest.GetAllContests.GetAllContestsRequest;
+import com.example.olympiad.web.dto.contest.GetAllContests.GetAllContestsResponse;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
@@ -26,7 +28,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.core.io.Resource;
@@ -75,14 +76,13 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get all contests", description = "Return all contests")
+    @Operation(summary = "Get contests by page and total count", description = "Return contests limited by page and total contests count")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
-    @GetMapping("/contests")
-    public ResponseEntity<List<AllContestsNameSessionResponse>> getAllContests() {
-        List<AllContestsNameSessionResponse> contests = contestService.getAllContests();
-        return ResponseEntity.ok(contests);
+    @PostMapping("/contests")
+    public ResponseEntity<GetAllContestsResponse> getAllContests(@Valid @RequestBody final GetAllContestsRequest getAllContestsRequest) {
+        return ResponseEntity.ok(contestService.getAllContests(getAllContestsRequest.getPage()));
     }
 
     @Operation(summary = "Get contest by session", description = "Return contest by session")

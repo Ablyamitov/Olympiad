@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 
 @RestControllerAdvice
-@Hidden
 public class ControllerAdvice {
     public static final Logger log = LoggerFactory.getLogger(ControllerAdvice.class);
 
