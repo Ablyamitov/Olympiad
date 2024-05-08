@@ -12,6 +12,7 @@ import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.TasksRepository;
 import com.example.olympiad.service.mail.EmailService;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
+import com.example.olympiad.web.dto.contest.ChangeName.ChangeNameRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
@@ -307,6 +308,18 @@ public class ContestService {
         contest.setDuration(changeDurationRequest.getNewDuration());
         contestRepository.save(contest);
         return contest.getDuration();
+    }
+
+    @Transactional
+    public String changeName(ChangeNameRequest changeNameRequest) {
+        Contest contest = contestRepository.findBySession(changeNameRequest.getSession())
+                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+        if (contest.getState() == ContestState.IN_PROGRESS) {
+            throw new ContestStartedYetException("Contest started yet");
+        }
+        contest.setName(changeNameRequest.getName());
+        contestRepository.save(contest);
+        return contest.getName();
     }
 
     @Transactional

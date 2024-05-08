@@ -5,6 +5,7 @@ import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
+import com.example.olympiad.web.dto.contest.ChangeName.ChangeNameRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
 import com.example.olympiad.web.dto.contest.DeleteContestRequest;
@@ -147,7 +148,7 @@ public class AdminController {
     @Operation(summary = "Change duration", description = "Change contest duration")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
-            @ApiResponse(responseCode = "400", description = "Valid exception - validation failed",
+            @ApiResponse(responseCode = "400", description = "ContestStartedYetException - contest started yet\"",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
             ,
             @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
@@ -157,6 +158,21 @@ public class AdminController {
     public ResponseEntity<String> changeDuration(@Valid @RequestBody final ChangeDurationRequest changeDurationRequest) {
         return ResponseEntity.ok(contestService
                 .changeDuration(changeDurationRequest));
+    }
+
+    @Operation(summary = "Change name", description = "Change contest name")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "400", description = "ContestStartedYetException - contest started yet",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+            ,
+            @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
+    @PostMapping("/changeName")
+    public ResponseEntity<String> changeName(@Valid @RequestBody final ChangeNameRequest changeNameRequest) {
+        return ResponseEntity.ok(contestService
+                .changeName(changeNameRequest));
     }
 
     @Operation(summary = "Add problems", description = "Add problems to the contest")
