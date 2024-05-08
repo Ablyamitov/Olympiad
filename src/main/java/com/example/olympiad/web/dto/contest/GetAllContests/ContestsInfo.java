@@ -14,6 +14,6 @@ public class ContestsInfo {
     private Long session;
     private ContestState contestState;
     private String duration;
-    private ZonedDateTime startTime;
-    private ZonedDateTime endTime;
+    private String startTime;
+    private String endTime;
 }

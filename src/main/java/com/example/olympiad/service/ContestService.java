@@ -45,6 +45,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -269,14 +270,15 @@ public class ContestService {
     }
 
     private GetAllContestsResponse getGetAllContests(Page<Contest> pagedResult) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm:ss");
         List<ContestsInfo> contests = pagedResult.stream()
                 .map(contest -> new ContestsInfo(
                         contest.getName(),
                         contest.getSession(),
                         contest.getState(),
                         contest.getDuration(),
-                        contest.getStartTime(),
-                        contest.getEndTime()))
+                        (contest.getStartTime() != null) ? contest.getStartTime().format(formatter) : null,
+                        (contest.getEndTime() != null) ? contest.getEndTime().format(formatter) : null))
                 .collect(Collectors.toList());
 
         Long count = contestRepository.count();
