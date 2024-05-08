@@ -1,6 +1,5 @@
 package com.example.olympiad.web.controller;
 
-import com.example.olympiad.repository.UserTasksRepository;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.contest.ResultTable.ResultTableResponse;
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.apache.tika.Tika;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +28,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 public class JudgeController {
-    private final Tika tika = new Tika();
+
     private final TaskService taskService;
-    private final UserTasksRepository userTasksRepository;
 
     //Judge
     @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for judge")
@@ -55,19 +52,6 @@ public class JudgeController {
     })
     @PostMapping("/download")
     public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadUserTaskRequest downloadRequest) throws Exception {
-//        //Подправить, засунув в fileContent путь
-//        Path file = Paths.get("uploads", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
-//        Resource resource = new UrlResource(file.toUri());
-//
-//        if (resource.exists() || resource.isReadable()) {
-//            String mimeType = tika.detect(file);
-//            return ResponseEntity.ok()
-//                    .contentType(MediaType.parseMediaType(mimeType))
-//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-//                    .body(resource);
-//        } else {
-//            throw new RuntimeException("Could not read the file!");
-//        }
         return taskService.downloadFile(downloadRequest);
     }
 

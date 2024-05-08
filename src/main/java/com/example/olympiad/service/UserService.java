@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,7 +62,7 @@ public class UserService {
     @Transactional
     public ChangeUserInfoResponse changeUserInfo(final UserInfo userInfo) {
         User user = userRepository.findByUsername(userInfo.getUsername())
-                .orElseThrow(()->new UserNotFoundException("User does not exits"));
+                .orElseThrow(() -> new UserNotFoundException("User does not exits"));
 
 
         user.setName(userInfo.getName());
@@ -83,9 +85,6 @@ public class UserService {
     }
 
 
-
-
-
     @Transactional
     public Map<User, String> createParticipants(int participantCount, String usernamePrefix, Long session) {
         Map<User, String> participants = new HashMap<>();
@@ -98,13 +97,10 @@ public class UserService {
 
     private void saveParticipant(String usernamePrefix, Long session, Map<User, String> participants, int i) {
         User user = new User();
-        String password =  generateRandomString();
+        String password = generateRandomString();
         user.setSession(session);
         user.setUsername(usernamePrefix + "_" + session + "_" + i);
         user.setPassword(passwordEncoder.encode(password));
-//        user.setName(generateRandomString(5)); // генерируем случайное имя
-//        user.setSurname(generateRandomString(5));
-//        user.setEmail(generateRandomString(5) + "@example.com"); // генерируем случайный email
         user.setName(null);
         user.setSurname(null);
         user.setEmail(null);
@@ -124,14 +120,14 @@ public class UserService {
 
     private void saveJudge(String usernamePrefix, Long session, Map<User, String> judges, int i) {
         User user = new User();
-        String password =  generateRandomString();
+        String password = generateRandomString();
         user.setSession(session);
         user.setUsername(usernamePrefix + "_J_" + session + "_" + i);
         user.setPassword(passwordEncoder.encode(password));
 
-        user.setName(null); // генерируем случайное имя
+        user.setName(null);
         user.setSurname(null);
-        user.setEmail(null); // генерируем случайный email
+        user.setEmail(null);
         user.setRoles(Set.of(Role.ROLE_JUDGE));
         userRepository.save(user);
         judges.put(user, password);
@@ -140,7 +136,7 @@ public class UserService {
     @Transactional
     public Map<User, String> createParticipants(int participantCount, String usernamePrefix, Long session, int existingParticipants) {
         Map<User, String> participants = new HashMap<>();
-        for (int i = existingParticipants+1; i <= participantCount+existingParticipants; i++) {
+        for (int i = existingParticipants + 1; i <= participantCount + existingParticipants; i++) {
             saveParticipant(usernamePrefix, session, participants, i);
 
         }
@@ -150,7 +146,7 @@ public class UserService {
     @Transactional
     public Map<User, String> createJudges(int judgeCount, String usernamePrefix, Long session, int ExistingJudge) {
         Map<User, String> judges = new HashMap<>();
-        for (int i = ExistingJudge+1; i <= judgeCount+ExistingJudge; i++) {
+        for (int i = ExistingJudge + 1; i <= judgeCount + ExistingJudge; i++) {
             saveJudge(usernamePrefix, session, judges, i);
 
 

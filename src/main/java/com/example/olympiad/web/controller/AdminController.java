@@ -4,7 +4,6 @@ import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
-import com.example.olympiad.web.dto.contest.GetAllContests.ContestsInfo;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
@@ -13,6 +12,7 @@ import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
 import com.example.olympiad.web.dto.contest.GetAllContests.GetAllContestsRequest;
 import com.example.olympiad.web.dto.contest.GetAllContests.GetAllContestsResponse;
+import com.example.olympiad.web.dto.contest.GetAllContestsContainingName.GetAllContestsContainingNameRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeRequest;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
@@ -21,6 +21,7 @@ import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
 import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -63,7 +64,6 @@ public class AdminController {
     }
 
 
-
     @Operation(summary = "Create users for contest", description = "Return created users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -83,6 +83,18 @@ public class AdminController {
     @PostMapping("/contests")
     public ResponseEntity<GetAllContestsResponse> getAllContests(@Valid @RequestBody final GetAllContestsRequest getAllContestsRequest) {
         return ResponseEntity.ok(contestService.getAllContests(getAllContestsRequest.getPage()));
+    }
+
+
+    @Operation(summary = "Find contests containing name or state", description = "Return contests limited by page and containing name or state")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
+    })
+    @PostMapping("/contests/search")
+    public ResponseEntity<GetAllContestsResponse> getAllContestsContainingNameOrState(@Valid @RequestBody final GetAllContestsContainingNameRequest getAllContestsContainingNameRequest) {
+        return ResponseEntity.ok(contestService.getAllContestsContainingNameOrState(getAllContestsContainingNameRequest.getPage(),
+                getAllContestsContainingNameRequest.getName(),
+                getAllContestsContainingNameRequest.getStates()));
     }
 
     @Operation(summary = "Get contest by session", description = "Return contest by session")
@@ -155,12 +167,12 @@ public class AdminController {
     })
     @PostMapping("/addProblems")
     public ResponseEntity<List<Tasks>> addProblems(
-            @RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
-            @RequestParam(value = "htmlName", required = false) String htmlName,
-            @RequestParam(value = "htmlContent") String htmlContent,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "problem", required = false) MultipartFile file,
-            @RequestParam("points") @Min(value = 0, message = "Session must be at least 0") int points
+            @Parameter(description = "Сессия", example = "1") @RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
+            @Parameter(description = "Имя html", example = "Сортировка.html") @RequestParam(value = "htmlName", required = false) String htmlName,
+            @Parameter(description = "Содержимое html", example = "<!DOCTYPE html>") @RequestParam(value = "htmlContent") String htmlContent,
+            @Parameter(description = "Название zip файла", example = "Work1.zip") @RequestParam(value = "name", required = false) String name,
+            @Parameter(description = "Zip файл") @RequestParam(value = "problem", required = false) MultipartFile file,
+            @Parameter(description = "Макс. кол-во очков", example = "20") @RequestParam("points") @Min(value = 0, message = "Session must be at least 0") int points
     ) throws IOException {
         AddProblemRequest addProblemRequest = new AddProblemRequest();
         addProblemRequest.setSession(session);

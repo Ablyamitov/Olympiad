@@ -9,10 +9,11 @@ import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
 import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
 import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
-import com.example.olympiad.web.dto.task.UploadFileRequest;
+import com.example.olympiad.web.dto.task.UploadFIle.UploadFileRequest;
 import com.example.olympiad.web.dto.user.UserInfo.ChangeUserInfoResponse;
 import com.example.olympiad.web.dto.user.UserInfo.UserInfo;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,7 +23,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.apache.tika.Tika;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +39,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 public class UserController {
-    private final Tika tika = new Tika();
     private final ContestService contestService;
     private final TaskService taskService;
     private final UserService userService;
@@ -79,18 +78,17 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/contest/uploadFile")
-    public ResponseEntity<List<JudgeTableResponse>> uploadFile(@RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
-                                                               @RequestParam("userId") @Min(value = 0, message = "userId must be at least 0") Long userId,
-                                                               @RequestParam("taskNumber") @Min(value = 0, message = "taskNumber must be at least 0") Long taskNumber,
-                                                               @RequestParam("file") MultipartFile file,
-                                                               @RequestParam("fileName") @NotBlank(message = "fileName cannot be blank") String fileName
+    public ResponseEntity<List<JudgeTableResponse>> uploadFile(@Parameter(description = "Сессия") @RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
+                                                               @Parameter(description = "id участника") @RequestParam("userId") @Min(value = 0, message = "userId must be at least 0") Long userId,
+                                                               @Parameter(description = "Номер задания") @RequestParam("taskNumber") @Min(value = 0, message = "taskNumber must be at least 0") Long taskNumber,
+                                                               @Parameter(description = "Файл ответа участника") @RequestParam("file") MultipartFile file,
+                                                               @Parameter(description = "Имя файла ответа участника", example = "index.js") @RequestParam("fileName") @NotBlank(message = "fileName cannot be blank") String fileName
     ) throws IOException {
         UploadFileRequest uploadFileRequest = new UploadFileRequest();
         uploadFileRequest.setSession(session);
         uploadFileRequest.setUserId(userId);
         uploadFileRequest.setTaskNumber(taskNumber);
         uploadFileRequest.setFile(file);
-        //uploadFileRequest.setFileExtension(fileExtension);
         uploadFileRequest.setFileName(fileName);
 
         try {
@@ -123,7 +121,6 @@ public class UserController {
     public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadUserTaskRequest downloadRequest) throws Exception {
         return taskService.downloadFile(downloadRequest);
     }
-
 
 
     @Operation(summary = "Get task file content", description = "Returns a file content task for participant from localstorage")

@@ -11,13 +11,12 @@ import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.TasksRepository;
 import com.example.olympiad.service.mail.EmailService;
-import com.example.olympiad.web.dto.contest.GetAllContests.ContestsInfo;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestRequest;
-import com.example.olympiad.web.dto.contest.CreateContest.ProblemInfo;
 import com.example.olympiad.web.dto.contest.EditProblems.AddProblemRequest;
 import com.example.olympiad.web.dto.contest.EditProblems.DeleteProblemRequest;
+import com.example.olympiad.web.dto.contest.GetAllContests.ContestsInfo;
 import com.example.olympiad.web.dto.contest.GetAllContests.GetAllContestsResponse;
 import com.example.olympiad.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
@@ -80,95 +79,12 @@ public class ContestService {
     }
 
 
-//    @Transactional
-//    public ContestAndFileResponse create(final ContestRequest contestRequest) throws IOException {
-//
-//
-//        Contest contest = new Contest();
-//
-//        long maxSession;
-//        if (contestRepository.findContestWithMaxSession().isPresent())
-//            maxSession = contestRepository.findContestWithMaxSession().get().getSession() + 1;
-//        else
-//            maxSession = 1L;
-//        contest.setSession(maxSession);
-//        contest.setName(contestRequest.getName());
-//        contest.setParticipantCount(contestRequest.getParticipantCount());
-//        contest.setJudgeCount(contestRequest.getJudgeCount());
-//        contest.setUsernamePrefix(contestRequest.getUsernamePrefix());
-//        contest.setDuration(contestRequest.getDuration());
-//        contest.setState(ContestState.NOT_STARTED);
-//
-//
-//        Map<User, String> participants = userService.createParticipants(contest.getParticipantCount(), contest.getUsernamePrefix(), contest.getSession());
-//        Map<User, String> judges = userService.createJudges(contest.getJudgeCount(), contest.getUsernamePrefix(), contest.getSession());
-//
-//        contestRepository.save(contest);
-//
-//
-//        contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
-//        contestRepository.save(contest);
-//        byte[] fileContent;
-//        File file = createFile(contest, participants, judges);
-//
-//        try {
-//            assert file != null;
-//            fileContent = Files.readAllBytes(file.toPath());
-//        } catch (IOException e) {
-//            throw new RuntimeException("Error: " + e.getMessage());
-//        }
-//        ContestAndFileResponse response = new ContestAndFileResponse();
-//        response.setContest(contest);
-//        response.setFileContent(fileContent);
-//
-//        if (!file.delete()) log.info("Файл " + file.getName() + " не может быть удален");
-//
-//        return response;
-//    }
-//
-//
-//    @Transactional
-//    public FileResponse createUsers(final CreateUsersRequest createUsersRequest) {
-//        /*if (contestRepository.findBySession(createUsersRequest.getSession()).isPresent()) {
-//            throw new IllegalStateException("Contest already exists.");
-//        }*/
-//        Contest contest = contestRepository.findBySession(createUsersRequest.getSession())
-//                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
-//
-//        Map<User, String> participants = userService.createParticipants(createUsersRequest.getParticipantCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getParticipantCount());
-//        Map<User, String> judges = userService.createJudges(createUsersRequest.getJudgeCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getJudgeCount());
-//
-//        contest.setParticipantCount(contest.getParticipantCount() + createUsersRequest.getParticipantCount());
-//        contest.setJudgeCount(contest.getJudgeCount() + createUsersRequest.getJudgeCount());
-//        contestRepository.save(contest);
-//
-//        byte[] fileContent;
-//        File file = createFile(contest, participants, judges);
-//
-//        try {
-//            assert file != null;
-//            fileContent = Files.readAllBytes(file.toPath());
-//        } catch (IOException e) {
-//            throw new RuntimeException("Error: " + e.getMessage());
-//        }
-//        FileResponse fileResponse = new FileResponse();
-//        fileResponse.setFileContent(fileContent);
-//
-//
-//        if (!file.delete()) log.info("Файл " + file.getName() + " не может быть удален");
-//        return fileResponse;
-//    }
-//
-
-
     @Transactional
     public ContestAndFileResponse create(final ContestRequest contestRequest) throws IOException {
         Contest contest = createContest(contestRequest);
         Map<User, String> participants = userService.createParticipants(contest.getParticipantCount(), contest.getUsernamePrefix(), contest.getSession());
         Map<User, String> judges = userService.createJudges(contest.getJudgeCount(), contest.getUsernamePrefix(), contest.getSession());
         contestRepository.save(contest);
-        //contest.setTasks(createProblems(contest.getSession(), contestRequest.getProblemInfos()));
-        //contestRepository.save(contest);
         return createContestAndFileResponse(contest, participants, judges);
     }
 
@@ -247,7 +163,6 @@ public class ContestService {
             StringBuilder body = new StringBuilder();
 
 
-            // Записываем информацию об участниках и жюри в файл
             writer.write("Информация об олимпиаде: " + contest.getName() + "\n");
             String subject = "Информация об олимпиаде: " + contest.getName();
             writer.write("Участники: \n");
@@ -275,7 +190,6 @@ public class ContestService {
             return file;
         } catch (IOException e) {
             log.error("Ошибка с файлом");
-            //System.err.println("Ошибка с файлом");
         }
         return null;
     }
@@ -284,12 +198,10 @@ public class ContestService {
         Contest contest = contestRepository.findBySession(contestSession)
                 .orElseThrow(() ->
                         new ContestNotFoundException("Contest not found."));
-        if (contest.getStartTime() != null){
+        if (contest.getStartTime() != null) {
             throw new ContestStartedYetException("Contest have started yet");
         }
         ZonedDateTime startTime = ZonedDateTime.now(ZoneId.of("UTC+3")); // Текущее время
-
-        //ZonedDateTime endTime = startTime.plus(Duration.ofSeconds(contest.getDuration()));
         ZonedDateTime endTime = startTime.plus(parseToDuration(contest.getDuration()));
         contest.setStartTime(startTime);
         contest.setEndTime(endTime);
@@ -334,6 +246,29 @@ public class ContestService {
 
         Page<Contest> pagedResult = contestRepository.findAll(pageable);
 
+        return getGetAllContests(pagedResult);
+    }
+
+    public GetAllContestsResponse getAllContestsContainingNameOrState(Integer page, String name, String statesString) {
+        int pageSize = 6;
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by("session"));
+        List<ContestState> states;
+        if (name == null) name = "";
+        if (statesString != null) {
+            states = Arrays.stream(statesString.split(","))
+                    .map(String::trim)
+                    .map(ContestState::valueOf)
+                    .collect(Collectors.toList());
+        } else {
+            states = new ArrayList<>(List.of(ContestState.NOT_STARTED, ContestState.IN_PROGRESS, ContestState.FINISHED));
+        }
+
+        Page<Contest> pagedResult = contestRepository.findByNameContainingAndStateIn(name, states, pageable);
+
+        return getGetAllContests(pagedResult);
+    }
+
+    private GetAllContestsResponse getGetAllContests(Page<Contest> pagedResult) {
         List<ContestsInfo> contests = pagedResult.stream()
                 .map(contest -> new ContestsInfo(
                         contest.getName(),
@@ -346,12 +281,13 @@ public class ContestService {
 
         Long count = contestRepository.count();
 
-        GetAllContestsResponse response = new GetAllContestsResponse();
-        response.setContestsInfos(contests);
-        response.setCount(count);
+        GetAllContestsResponse getAllContestsResponse = new GetAllContestsResponse();
+        getAllContestsResponse.setContestsInfos(contests);
+        getAllContestsResponse.setCount(count);
 
-        return response;
+        return getAllContestsResponse;
     }
+
 
     public Contest getContestBySession(Long session) {
         return contestRepository.findBySession(session)
@@ -363,7 +299,7 @@ public class ContestService {
     public String changeDuration(ChangeDurationRequest changeDurationRequest) {
         Contest contest = contestRepository.findBySession(changeDurationRequest.getSession())
                 .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
-        if (contest.getState() == ContestState.IN_PROGRESS){
+        if (contest.getState() == ContestState.IN_PROGRESS) {
             throw new ContestStartedYetException("Contest started yet");
         }
         contest.setDuration(changeDurationRequest.getNewDuration());
@@ -378,7 +314,7 @@ public class ContestService {
 
 
         Tasks task = new Tasks();
-        Long idInSession = tasksRepository.countBySession(addProblemRequest.getSession())+1;
+        Long idInSession = tasksRepository.countBySession(addProblemRequest.getSession()) + 1;
         task.setTaskId(idInSession);
         task.setSession(contest.getSession());
         task.setTask(addProblemRequest.getHtmlContent());
@@ -391,8 +327,7 @@ public class ContestService {
         tasksRepository.save(task);
 
 
-        //
-        if(addProblemRequest.getName() != null) {
+        if (addProblemRequest.getName() != null) {
             try {
                 String userDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + task.getId().toString() + "/";
                 Path path = Paths.get(userDir);
@@ -403,12 +338,10 @@ public class ContestService {
                 taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
                         userDir,
                         addProblemRequest.getProblem().getOriginalFilename());
-                //unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
             } catch (IOException | RarException e) {
                 throw new IOException(e.getMessage());
             }
         }
-        //
 
         List<Tasks> problems = tasksRepository.findAllBySession(contest.getSession());
         contest.setTasks(problems);
@@ -417,26 +350,6 @@ public class ContestService {
         return problems;
     }
 
-
-    private List<Tasks> createProblems(Long session, List<ProblemInfo> problemInfos) throws IOException {
-        List<Tasks> tasks = new ArrayList<>();
-        for (ProblemInfo problemInfo : problemInfos) {
-            Tasks task = new Tasks();
-            task.setSession(session);
-            task.setName(problemInfo.getName());
-
-
-            //task.setTask(problemInfo.getProblem());
-            task.setTask(Base64.getEncoder().encodeToString(problemInfo.getProblem().getBytes()));
-
-
-            task.setPoints(problemInfo.getPoints());
-
-            tasks.add(task);
-            tasksRepository.save(task);
-        }
-        return tasks;
-    }
 
     @Transactional
     public LinkedList<Tasks> deleteProblem(DeleteProblemRequest deleteProblemRequest) {

@@ -32,35 +32,6 @@ public class AuthController {
     })
     @GetMapping("/checkAuth")
     public ResponseEntity<JwtResponse> checkAuth(HttpServletRequest servletRequest) {
-//        JwtResponse jwtResponse = new JwtResponse();
-//
-//        String bearerToken = servletRequest.getHeader("Authorization");
-//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-//            bearerToken = bearerToken.substring(7);
-//        }
-//        if (bearerToken != null && jwtTokenProvider.validateToken(bearerToken)) {
-//            try {
-//                String username = jwtTokenProvider.getUsername(bearerToken);
-//                User user = userService.getByUsername(username);
-//                jwtResponse.setId(user.getId());
-//                jwtResponse.setUsername(user.getUsername());
-//                jwtResponse.setSession(user.getSession());
-//                jwtResponse.setRole(user.getRoles().stream()
-//                        .map(Role::name)
-//                        .collect(Collectors.joining(", ")));
-//
-//                jwtResponse.setAccessToken(bearerToken);
-//            } catch (UserNotFoundException ignored) {
-//
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-//            }
-//
-//
-//        } else {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-//        }
-
-        //return ResponseEntity.ok(jwtResponse);
         return ResponseEntity.ok(authService.checkAuth(servletRequest));
     }
 
@@ -73,26 +44,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@Validated
                                              @RequestBody final JwtRequest loginRequest) {
-
-//        JwtResponse jwtResponse = new JwtResponse();
-//        authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(
-//                        loginRequest.getUsername(), loginRequest.getPassword())
-//        );
-//        User user = userService.getByUsername(loginRequest.getUsername());
-//        jwtResponse.setId(user.getId());
-//        jwtResponse.setUsername(user.getUsername());
-//        jwtResponse.setSession(user.getSession());
-//        jwtResponse.setRole(user.getRoles().stream()
-//                .map(Role::name)
-//                .collect(Collectors.joining(", ")));
-//
-//
-//        jwtResponse.setAccessToken(jwtTokenProvider.createAccessToken(
-//                user.getId(), user.getUsername(), user.getRoles())
-//        );
-//
-//        return jwtResponse;
         return ResponseEntity.ok(authService.login(loginRequest));
     }
 

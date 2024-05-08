@@ -1,7 +1,6 @@
 package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.Contest;
-import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.domain.contest.UserTaskState;
 import com.example.olympiad.domain.contest.UserTasks;
 import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
@@ -18,10 +17,9 @@ import com.example.olympiad.web.dto.contest.ResultTable.Users;
 import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
 import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
 import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
-import com.example.olympiad.web.dto.task.UploadFileRequest;
-import com.example.olympiad.web.dto.task.UploadFileResponse;
+import com.example.olympiad.web.dto.task.UploadFIle.UploadFileRequest;
+import com.example.olympiad.web.dto.task.UploadFIle.UploadFileResponse;
 import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
-import com.github.junrar.Junrar;
 import com.github.junrar.exception.RarException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -35,7 +33,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,8 +46,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +57,6 @@ public class TaskService {
     private final ContestRepository contestRepository;
     private final UserRepository userRepository;
     private final TasksRepository tasksRepository;
-    //private static final String UPLOAD_DIR = "uploads/";
     @Value("${storage.location}")
     private String UPLOAD_DIR;
 
@@ -69,7 +65,7 @@ public class TaskService {
     public List<JudgeTableResponse> uploadFile(UploadFileRequest uploadFileRequest) throws IOException {
 
         Contest contest = contestRepository.findBySession(uploadFileRequest.getSession())
-                .orElseThrow(()->new ContestNotFoundException("Contest not found"));
+                .orElseThrow(() -> new ContestNotFoundException("Contest not found"));
         UploadFileResponse uploadFileResponse = new UploadFileResponse();
         uploadFileResponse.setSession(uploadFileRequest.getSession());
         uploadFileResponse.setUserId(uploadFileRequest.getUserId());
@@ -81,7 +77,7 @@ public class TaskService {
         uploadFileResponse.setPoints(null);
 
         UserTasks userTask = new UserTasks();
-        Long idInSession = userTasksRepository.countBySession(uploadFileRequest.getSession())+1;
+        Long idInSession = userTasksRepository.countBySession(uploadFileRequest.getSession()) + 1;
         userTask.setIdInSession(idInSession);
         userTask.setSession(uploadFileRequest.getSession());
         userTask.setUserId(uploadFileRequest.getUserId());
@@ -103,7 +99,6 @@ public class TaskService {
         userTask.setSentTime(timeDifference);
 
 
-
         userTask.setFileName(uploadFileRequest.getFileName());
         userTask.setFileExtension(uploadFileRequest.getFileExtension());
 
@@ -114,7 +109,7 @@ public class TaskService {
 
 
         try {
-            String userDir = UPLOAD_DIR +"user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + userTask.getId().toString() + "/";
+            String userDir = UPLOAD_DIR + "user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + userTask.getId().toString() + "/";
             Path path = Paths.get(userDir);
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
@@ -123,7 +118,6 @@ public class TaskService {
             handleFile(uploadFileRequest.getFile().getInputStream(),
                     userDir,
                     uploadFileRequest.getFile().getOriginalFilename());
-            //unzipFile(uploadFileRequest.getFile().getInputStream(), userDir);
         } catch (IOException | RarException e) {
             throw new IOException(e.getMessage());
         }
@@ -145,74 +139,20 @@ public class TaskService {
 
     public void handleFile(InputStream fileStream, String destDir, String fileName) throws IOException, RarException {
 
-        // Сохраняем InputStream во временный файл
         Path tempPath = Files.createTempFile("temp", null);
         Files.copy(fileStream, tempPath, StandardCopyOption.REPLACE_EXISTING);
 
-        // Определяем тип файла
-        Tika tika = new Tika();
-        String fileType = tika.detect(tempPath);
-
-        // Обрабатываем файл в зависимости от его типа
-//        if (fileType.equals("application/zip")) {
-//            unzipFile(Files.newInputStream(tempPath), destDir);
-//        } else {
-//            saveFile(Files.newInputStream(tempPath), destDir, fileName);
-//        }
         saveFile(Files.newInputStream(tempPath), destDir, fileName);
-
-        // Удаляем временный файл
         Files.delete(tempPath);
 
     }
 
     private void saveFile(InputStream fileStream, String destDir, String fileName) throws IOException {
-        // Создаем путь для сохранения файла
         Path filePath = Paths.get(destDir, fileName);
 
-        // Сохраняем содержимое InputStream в файл
         Files.copy(fileStream, filePath);
     }
 
-    private void extractRar(InputStream rarStream, String destDir) throws IOException, RarException {
-        File destinationFolder = new File(destDir);
-        Junrar.extract(rarStream, destinationFolder);
-    }
-
-    private void unzipFile(InputStream zipStream, String destDir) {
-        try (ZipInputStream zis = new ZipInputStream(zipStream)) {
-
-
-            Files.walk(Paths.get(destDir))
-                    .filter(Files::isRegularFile)
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-
-
-            ZipEntry zipEntry = zis.getNextEntry();
-            while (zipEntry != null) {
-                String filePath = destDir + File.separator + zipEntry.getName();
-                if (!zipEntry.isDirectory()) {
-                    extractFile(zis, filePath);
-                } else {
-                    Files.createDirectories(Paths.get(filePath));
-                }
-                zipEntry = zis.getNextEntry();
-            }
-        } catch (IOException ignored) {
-        }
-    }
-
-
-    private void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
-        BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
-        byte[] bytesIn = new byte[104857610];
-        int read;
-        while ((read = zipIn.read(bytesIn)) != -1) {
-            bos.write(bytesIn, 0, read);
-        }
-        bos.close();
-    }
 
     public List<JudgeTableResponse> getAllTasksByUserIdAndTaskNumber(GetAllTasksRequest getAllTasksRequest) {
         return getJudgeTableResponses(getAllTasksRequest.getUserId(), getAllTasksRequest.getTaskNumber());
@@ -240,7 +180,7 @@ public class TaskService {
     }
 
     public ResponseEntity<Resource> downloadFile(DownloadUserTaskRequest downloadRequest) throws Exception {
-        Path file = Paths.get("uploads","user-tasks", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
+        Path file = Paths.get("uploads", "user-tasks", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
         return getResourceResponseEntity(file);
     }
 
@@ -287,7 +227,6 @@ public class TaskService {
         jtr.setComment(ut.getComment());
         jtr.setSentTime(ut.getSentTime());
         jtr.setFileName(ut.getFileName());
-        //jtr.setFileExtension(ut.getFileExtension());
         jtr.setState(ut.getState().name());
         return jtr;
     }
@@ -297,41 +236,37 @@ public class TaskService {
         List<User> fullUsers = userRepository.findAllBySession(session);
         int tasksCount = tasksRepository.findAllBySession(session).size();
         List<Users> users = new ArrayList<>();
-        for (User u: fullUsers) {
+        for (User u : fullUsers) {
             Users userInfo = new Users();
             userInfo.setName(u.getName());
             userInfo.setSurname(u.getSurname());
             userInfo.setEmail(u.getEmail());
 
-            List<UserTasks> userTasks = userTasksRepository.findAllLatestTasksBySessionAndUserId(u.getSession(),u.getId());
+            List<UserTasks> userTasks = userTasksRepository.findAllLatestTasksBySessionAndUserId(u.getSession(), u.getId());
             List<UserAnswers> userAnswers = new ArrayList<>();
 
             int totalPoints = 0;
             for (int taskNumber = 0; taskNumber < tasksCount; taskNumber++) {
                 UserAnswers userAnswer = new UserAnswers();
-                if(taskNumber+1 != userTasks.get(taskNumber).getTaskNumber()){
-                    userAnswer.setTaskNumber((long) (taskNumber+1));
+                if (taskNumber + 1 != userTasks.get(taskNumber).getTaskNumber()) {
+                    userAnswer.setTaskNumber((long) (taskNumber + 1));
                     userAnswer.setAnswerStatus(AnswerStatus.NOT_SENT.name());
                     userAnswer.setPoints(null);
-                }
-                else {
+                } else {
                     userAnswer.setTaskNumber(userTasks.get(taskNumber).getTaskNumber());
-                    if(userTasks.get(taskNumber).getState()==UserTaskState.NOT_EVALUATED){
+                    if (userTasks.get(taskNumber).getState() == UserTaskState.NOT_EVALUATED) {
                         userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
                         userAnswer.setPoints(null);
-                    }
-                    else {
+                    } else {
                         userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
                         userAnswer.setPoints(userTasks.get(taskNumber).getPoints());
-                        totalPoints+=userAnswer.getPoints();
+                        totalPoints += userAnswer.getPoints();
                     }
                 }
 
                 userAnswers.add(userAnswer);
             }
             userInfo.setUserAnswers(userAnswers);
-
-
 
 
             userInfo.setSolvedTasksCount(userTasks.size());
@@ -342,7 +277,6 @@ public class TaskService {
         }
         resultTableResponse.setUsers(users);
         resultTableResponse.setTasksCount(tasksCount);
-        //resultTableResponse.setCurrentTime(ZonedDateTime.now(ZoneId.of("UTC+3")));
 
         return resultTableResponse;
     }
