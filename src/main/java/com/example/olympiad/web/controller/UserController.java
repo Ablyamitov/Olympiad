@@ -5,6 +5,7 @@ import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.service.UserService;
+import com.example.olympiad.service.UserTaskService;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
 import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
@@ -42,6 +43,7 @@ public class UserController {
     private final ContestService contestService;
     private final TaskService taskService;
     private final UserService userService;
+    private final UserTaskService userTaskService;
 
 
     @Operation(summary = "Set user info", description = "Returns the participant with his specified first name, last name and email")
@@ -92,12 +94,10 @@ public class UserController {
         uploadFileRequest.setFileName(fileName);
 
         try {
-            return ResponseEntity.ok(taskService.uploadFile(uploadFileRequest));
+            return ResponseEntity.ok(userTaskService.uploadFile(uploadFileRequest));
         } catch (IOException e) {
             throw new IOException(e.getMessage());
         }
-
-
     }
 
 
@@ -107,7 +107,7 @@ public class UserController {
     })
     @PostMapping("/contest/answers")
     public ResponseEntity<List<JudgeTableResponse>> getAllTasks(@Valid @RequestBody GetAllTasksRequest getAllTasksRequest) {
-        return ResponseEntity.ok(taskService.getAllTasksByUserIdAndTaskNumber(getAllTasksRequest));
+        return ResponseEntity.ok(userTaskService.getAllTasksByUserIdAndTaskNumber(getAllTasksRequest));
     }
 
 
@@ -118,8 +118,8 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/download")
-    public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadUserTaskRequest downloadRequest) throws Exception {
-        return taskService.downloadFile(downloadRequest);
+    public ResponseEntity<Resource> downloadUserTask(@Valid @RequestBody final DownloadUserTaskRequest downloadRequest) throws Exception {
+        return userTaskService.downloadFile(downloadRequest);
     }
 
 

@@ -22,9 +22,9 @@ public class JwtTokenFilter extends GenericFilterBean {
             bearerToken = bearerToken.substring(7);
         }
         if (bearerToken!=null && !bearerToken.equals("null") && jwtTokenProvider.validateToken(bearerToken)){
-            try{    //если токен валидный, получаем аутентификацию
+            try{
                 Authentication authentication = jwtTokenProvider.getAuthentication(bearerToken);
-                if(authentication!=null){   //пользователь аутентифицирован
+                if(authentication!=null){
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }catch (UserNotFoundException ignored){}
@@ -33,3 +33,5 @@ public class JwtTokenFilter extends GenericFilterBean {
         filterChain.doFilter(servletRequest,servletResponse);
     }
 }
+
+

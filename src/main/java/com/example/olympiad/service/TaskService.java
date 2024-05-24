@@ -57,85 +57,85 @@ public class TaskService {
     private final ContestRepository contestRepository;
     private final UserRepository userRepository;
     private final TasksRepository tasksRepository;
-    @Value("${storage.location}")
-    private String UPLOAD_DIR;
+//    @Value("${storage.location}")
+//    private String UPLOAD_DIR;
 
 
-    @Transactional
-    public List<JudgeTableResponse> uploadFile(UploadFileRequest uploadFileRequest) throws IOException {
+//    @Transactional
+//    public List<JudgeTableResponse> uploadFile(UploadFileRequest uploadFileRequest) throws IOException {
+//
+//        Contest contest = contestRepository.findBySession(uploadFileRequest.getSession())
+//                .orElseThrow(() -> new ContestNotFoundException("Contest not found"));
+//        UploadFileResponse uploadFileResponse = new UploadFileResponse();
+//        uploadFileResponse.setSession(uploadFileRequest.getSession());
+//        uploadFileResponse.setUserId(uploadFileRequest.getUserId());
+//        uploadFileResponse.setTaskNumber(uploadFileRequest.getTaskNumber());
+//        String fileContent = Base64.getEncoder().encodeToString(uploadFileRequest.getFile().getBytes());
+//        uploadFileResponse.setFileContent(fileContent);
+//        uploadFileResponse.setSentTime(Instant.now());
+//        uploadFileResponse.setComment(null);
+//        uploadFileResponse.setPoints(null);
+//
+//        UserTasks userTask = new UserTasks();
+//        Long idInSession = userTasksRepository.countBySession(uploadFileRequest.getSession()) + 1;
+//        userTask.setIdInSession(idInSession);
+//        userTask.setSession(uploadFileRequest.getSession());
+//        userTask.setUserId(uploadFileRequest.getUserId());
+//        userTask.setTaskNumber(uploadFileRequest.getTaskNumber());
+//
+//        userTask.setFileContent(fileContent);
+//
+//
+//        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC+3"));
+//        ZonedDateTime startTime = contest.getStartTime();
+//        Duration duration = Duration.between(startTime, now);
+//        long hours = duration.toHours();
+//        long minutes = duration.minusHours(hours).toMinutes();
+//        long seconds = duration.minusHours(hours).minusMinutes(minutes).getSeconds();
+//
+//        String timeDifference = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+//
+//
+//        userTask.setSentTime(timeDifference);
+//
+//
+//        userTask.setFileName(uploadFileRequest.getFileName());
+//        userTask.setFileExtension(uploadFileRequest.getFileExtension());
+//
+//        userTask.setComment(null);
+//        userTask.setPoints(null);
+//        userTask.setState(UserTaskState.NOT_EVALUATED);
+//        userTasksRepository.save(userTask);
+//
+//
+//        try {
+//            String userDir = UPLOAD_DIR + "user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + userTask.getId().toString() + "/";
+//            Path path = Paths.get(userDir);
+//            if (!Files.exists(path)) {
+//                Files.createDirectories(path);
+//            }
+//
+//            handleFile(uploadFileRequest.getFile().getInputStream(),
+//                    userDir,
+//                    uploadFileRequest.getFile().getOriginalFilename());
+//        } catch (IOException | RarException e) {
+//            throw new IOException(e.getMessage());
+//        }
+//
+//
+//        return getJudgeTableResponses(uploadFileRequest.getUserId(), userTask.getTaskNumber());
+//    }
 
-        Contest contest = contestRepository.findBySession(uploadFileRequest.getSession())
-                .orElseThrow(() -> new ContestNotFoundException("Contest not found"));
-        UploadFileResponse uploadFileResponse = new UploadFileResponse();
-        uploadFileResponse.setSession(uploadFileRequest.getSession());
-        uploadFileResponse.setUserId(uploadFileRequest.getUserId());
-        uploadFileResponse.setTaskNumber(uploadFileRequest.getTaskNumber());
-        String fileContent = Base64.getEncoder().encodeToString(uploadFileRequest.getFile().getBytes());
-        uploadFileResponse.setFileContent(fileContent);
-        uploadFileResponse.setSentTime(Instant.now());
-        uploadFileResponse.setComment(null);
-        uploadFileResponse.setPoints(null);
-
-        UserTasks userTask = new UserTasks();
-        Long idInSession = userTasksRepository.countBySession(uploadFileRequest.getSession()) + 1;
-        userTask.setIdInSession(idInSession);
-        userTask.setSession(uploadFileRequest.getSession());
-        userTask.setUserId(uploadFileRequest.getUserId());
-        userTask.setTaskNumber(uploadFileRequest.getTaskNumber());
-
-        userTask.setFileContent(fileContent);
-
-
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC+3"));
-        ZonedDateTime startTime = contest.getStartTime();
-        Duration duration = Duration.between(startTime, now);
-        long hours = duration.toHours();
-        long minutes = duration.minusHours(hours).toMinutes();
-        long seconds = duration.minusHours(hours).minusMinutes(minutes).getSeconds();
-
-        String timeDifference = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-
-
-        userTask.setSentTime(timeDifference);
-
-
-        userTask.setFileName(uploadFileRequest.getFileName());
-        userTask.setFileExtension(uploadFileRequest.getFileExtension());
-
-        userTask.setComment(null);
-        userTask.setPoints(null);
-        userTask.setState(UserTaskState.NOT_EVALUATED);
-        userTasksRepository.save(userTask);
-
-
-        try {
-            String userDir = UPLOAD_DIR + "user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + userTask.getId().toString() + "/";
-            Path path = Paths.get(userDir);
-            if (!Files.exists(path)) {
-                Files.createDirectories(path);
-            }
-
-            handleFile(uploadFileRequest.getFile().getInputStream(),
-                    userDir,
-                    uploadFileRequest.getFile().getOriginalFilename());
-        } catch (IOException | RarException e) {
-            throw new IOException(e.getMessage());
-        }
-
-
-        return getJudgeTableResponses(uploadFileRequest.getUserId(), userTask.getTaskNumber());
-    }
-
-    private List<JudgeTableResponse> getJudgeTableResponses(Long userId, Long taskNumber) {
-        List<UserTasks> userTasks = userTasksRepository
-                .findAllByUserIdAndTaskNumberOrderByIdInSession(userId, taskNumber);
-        List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
-        for (UserTasks ut : userTasks) {
-            JudgeTableResponse jtr = mapToJudgeTableResponse(ut);
-            judgeTableResponses.add(jtr);
-        }
-        return judgeTableResponses;
-    }
+//    List<JudgeTableResponse> getJudgeTableResponses(Long userId, Long taskNumber) {
+//        List<UserTasks> userTasks = userTasksRepository
+//                .findAllByUserIdAndTaskNumberOrderByIdInSession(userId, taskNumber);
+//        List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
+//        for (UserTasks ut : userTasks) {
+//            JudgeTableResponse jtr = mapToJudgeTableResponse(ut);
+//            judgeTableResponses.add(jtr);
+//        }
+//        return judgeTableResponses;
+//    }
 
     public void handleFile(InputStream fileStream, String destDir, String fileName) throws IOException, RarException {
 
@@ -154,9 +154,9 @@ public class TaskService {
     }
 
 
-    public List<JudgeTableResponse> getAllTasksByUserIdAndTaskNumber(GetAllTasksRequest getAllTasksRequest) {
-        return getJudgeTableResponses(getAllTasksRequest.getUserId(), getAllTasksRequest.getTaskNumber());
-    }
+//    public List<JudgeTableResponse> getAllTasksByUserIdAndTaskNumber(GetAllTasksRequest getAllTasksRequest) {
+//        return getJudgeTableResponses(getAllTasksRequest.getUserId(), getAllTasksRequest.getTaskNumber());
+//    }
 
     @Transactional
     public JudgeTableResponse feedback(FeedbackRequest feedbackRequest) {
@@ -179,17 +179,17 @@ public class TaskService {
         return mapToJudgeTableResponse(ut);
     }
 
-    public ResponseEntity<Resource> downloadFile(DownloadUserTaskRequest downloadRequest) throws Exception {
-        Path file = Paths.get("uploads", "user-tasks", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
-        return getResourceResponseEntity(file);
-    }
+//    public ResponseEntity<Resource> downloadFile(DownloadUserTaskRequest downloadRequest) throws Exception {
+//        Path file = Paths.get("uploads", "user-tasks", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
+//        return getResourceResponseEntity(file);
+//    }
 
     public ResponseEntity<Resource> downloadFile(DownloadTaskRequest downloadTaskRequest) throws Exception {
         Path file = Paths.get("uploads", "tasks", downloadTaskRequest.getSession().toString(), downloadTaskRequest.getTaskId().toString(), downloadTaskRequest.getFileName());
         return getResourceResponseEntity(file);
     }
 
-    private ResponseEntity<Resource> getResourceResponseEntity(Path file) throws IOException {
+    ResponseEntity<Resource> getResourceResponseEntity(Path file) throws IOException {
         Resource resource = new UrlResource(file.toUri());
 
         if (resource.exists() || resource.isReadable()) {
@@ -215,7 +215,7 @@ public class TaskService {
 
     }
 
-    private JudgeTableResponse mapToJudgeTableResponse(UserTasks ut) {
+    JudgeTableResponse mapToJudgeTableResponse(UserTasks ut) {
         JudgeTableResponse jtr = new JudgeTableResponse();
         jtr.setId(ut.getId());
         jtr.setAnswerId(ut.getIdInSession());
