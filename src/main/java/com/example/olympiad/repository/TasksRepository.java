@@ -20,10 +20,8 @@ public interface TasksRepository extends JpaRepository<Tasks, Long> {
 
     Long findMaxIdBySession(Long session);
 
-    boolean existsBySessionAndIdAndName(Long session, Long id, String name);
 
-
-
+    Optional<Tasks> findFirstBySessionOrderByIdDesc(Long session);
 
 }
 

@@ -212,6 +212,7 @@ public class ContestService {
             public void run() {
                 contest.setState(ContestState.FINISHED);
                 contestRepository.save(contest);
+                timer.cancel();
             }
         }, Date.from(endTime.toInstant()));
 
@@ -334,7 +335,10 @@ public class ContestService {
         task.setPoints(addProblemRequest.getPoints());
         tasksRepository.save(task);
 
-        Long lastId = tasksRepository.findMaxIdBySession(addProblemRequest.getSession());
+//        Long lastId = tasksRepository.findMaxIdBySession(addProblemRequest.getSession());
+        Long lastId = tasksRepository.findFirstBySessionOrderByIdDesc(addProblemRequest.getSession())
+                .map(Tasks::getId)
+                .orElse(null);
 
         if (addProblemRequest.getName() != null) {
             try {

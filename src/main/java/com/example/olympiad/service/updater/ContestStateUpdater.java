@@ -10,7 +10,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @Component
 @RequiredArgsConstructor
@@ -21,9 +24,20 @@ public class ContestStateUpdater implements ApplicationListener<ContextRefreshed
         List<Contest> contests = contestRepository.findAll();
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC+3"));
         for (Contest contest : contests) {
-            if (contest.getEndTime()!=null && contest.getEndTime().isBefore(now) && contest.getState() != ContestState.FINISHED) {
+            if (contest.getEndTime().isBefore(now) && contest.getState() == ContestState.IN_PROGRESS) {
                 contest.setState(ContestState.FINISHED);
                 contestRepository.save(contest);
+            }
+            else if (contest.getEndTime().isAfter(now) && contest.getState() != ContestState.IN_PROGRESS) {
+                Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        contest.setState(ContestState.FINISHED);
+                        contestRepository.save(contest);
+                        timer.cancel();
+                    }
+                }, Date.from(contest.getEndTime().toInstant()));
             }
         }
     }
