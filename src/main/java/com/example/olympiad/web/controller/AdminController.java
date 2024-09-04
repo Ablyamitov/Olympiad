@@ -4,6 +4,7 @@ import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
+import com.example.olympiad.service.UserTaskService;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.ChangeName.ChangeNameRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
@@ -21,6 +22,7 @@ import com.example.olympiad.web.dto.contest.ResultTable.ResultTableResponse;
 import com.example.olympiad.web.dto.contest.createUsers.CreateUsersRequest;
 import com.example.olympiad.web.dto.contest.createUsers.FileResponse;
 import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
+import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,10 +49,12 @@ import java.util.List;
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
 @Validated
+
 public class AdminController {
 
     private final ContestService contestService;
     private final TaskService taskService;
+    private final UserTaskService userTaskService;
 
 
     @Operation(summary = "Create contest", description = "Return created contest and users")
@@ -82,6 +87,7 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
     @PostMapping("/contests")
+
     public ResponseEntity<GetAllContestsResponse> getAllContests(@Valid @RequestBody final GetAllContestsRequest getAllContestsRequest) {
         return ResponseEntity.ok(contestService.getAllContests(getAllContestsRequest.getPage()));
     }
@@ -121,7 +127,7 @@ public class AdminController {
 
     }
 
-    @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for admin")
+    @Operation(summary = "Get contest user tasks result table", description = "Returns a contest user tasks result table for admin")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
@@ -202,7 +208,7 @@ public class AdminController {
     }
 
 
-    @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for admin from localstorage")
+    @Operation(summary = "Get tasks file content", description = "Returns a file content contest task for admin from localstorage")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - File not found",
@@ -212,6 +218,20 @@ public class AdminController {
     public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadTaskRequest downloadTaskRequest) throws Exception {
         return taskService.downloadFile(downloadTaskRequest);
     }
+
+    @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for admin from localstorage")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Not found - File not found",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
+    @PostMapping("/download-user-task")
+    public ResponseEntity<Resource> downloadUserTask(@Valid @RequestBody final DownloadUserTaskRequest downloadUserTaskRequest) throws Exception {
+        return userTaskService.downloadFile(downloadUserTaskRequest);
+    }
+
+
+
 
     @Operation(summary = "Delete problems", description = "Delete problems from the contest")
     @ApiResponses(value = {

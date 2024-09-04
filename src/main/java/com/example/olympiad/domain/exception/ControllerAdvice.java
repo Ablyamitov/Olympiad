@@ -27,7 +27,7 @@ public class ControllerAdvice {
     public static final Logger log = LoggerFactory.getLogger(ControllerAdvice.class);
 
     @ExceptionHandler(ContestNotStartedException.class)
-    public ResponseEntity<ErrorMessage> contestNotStartedException(ContestNotStartedException exception) {
+    public ResponseEntity<ErrorMessage> handleContestNotStartedException(ContestNotStartedException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.GATEWAY_TIMEOUT)
@@ -36,7 +36,7 @@ public class ControllerAdvice {
 
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorMessage> entityNotFoundException(EntityNotFoundException exception) {
+    public ResponseEntity<ErrorMessage> handleEntityNotFoundException(EntityNotFoundException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -45,7 +45,7 @@ public class ControllerAdvice {
 
 
     @ExceptionHandler(ContestNotFoundException.class)
-    public ResponseEntity<ErrorMessage> contestNotFoundException(ContestNotFoundException exception) {
+    public ResponseEntity<ErrorMessage> handleContestNotFoundException(ContestNotFoundException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -53,7 +53,7 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorMessage> userNotFoundException(UserNotFoundException exception) {
+    public ResponseEntity<ErrorMessage> handleUserNotFoundException(UserNotFoundException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
@@ -62,7 +62,7 @@ public class ControllerAdvice {
 
 
     @ExceptionHandler({AccessDeniedException.class, org.springframework.security.access.AccessDeniedException.class})
-    public ResponseEntity<ErrorMessage> accessDeniedException() {
+    public ResponseEntity<ErrorMessage> handleAccessDeniedException() {
         log.error("Access denied");
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
@@ -70,7 +70,7 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(IOException.class)
-    public ResponseEntity<ErrorMessage> ioException(IOException exception) {
+    public ResponseEntity<ErrorMessage> handleIoException(IOException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -97,13 +97,10 @@ public class ControllerAdvice {
     }
 
     @ExceptionHandler(ContestStartedYetException.class)
-    public ResponseEntity<ErrorMessage> contestStartedYetException(ContestStartedYetException exception) {
+    public ResponseEntity<ErrorMessage> handleContestStartedYetException(ContestStartedYetException exception) {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorMessage(exception.getMessage()));
     }
-
-
-
 }

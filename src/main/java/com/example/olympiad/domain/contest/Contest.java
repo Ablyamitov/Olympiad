@@ -17,7 +17,6 @@ import java.util.List;
 @Data
 public class Contest {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -54,20 +53,4 @@ public class Contest {
     @Column(name = "state")
     private ContestState state;
 
-//    @Override
-//    public String toString() {
-//        return "Contest{" +
-//                "id=" + id +
-//                ", session=" + session +
-//                ", name='" + name + '\'' +
-//                ", participantCount=" + participantCount +
-//                ", judgeCount=" + judgeCount +
-//                ", usernamePrefix='" + usernamePrefix + '\'' +
-//                ", duration='" + duration + '\'' +
-//                ", startTime=" + startTime +
-//                ", endTime=" + endTime +
-//                ", tasks=" + tasks +
-//                ", state=" + state +
-//                '}';
-//    }
 }

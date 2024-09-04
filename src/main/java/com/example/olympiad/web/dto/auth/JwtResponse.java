@@ -12,6 +12,5 @@ public class JwtResponse {
     private Long session;
     private String Role;
     private String accessToken;
-    //private String refreshToken;
 
 }

@@ -11,7 +11,9 @@ import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
 import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
 import com.example.olympiad.web.dto.task.UploadFIle.UploadFileRequest;
 import com.example.olympiad.web.dto.task.UploadFIle.UploadFileResponse;
+import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
 import com.github.junrar.exception.RarException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,9 +64,7 @@ public class UserTaskService {
         userTask.setSession(uploadFileRequest.getSession());
         userTask.setUserId(uploadFileRequest.getUserId());
         userTask.setTaskNumber(uploadFileRequest.getTaskNumber());
-
         userTask.setFileContent(fileContent);
-
 
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC+3"));
         ZonedDateTime startTime = contest.getStartTime();
@@ -72,24 +72,20 @@ public class UserTaskService {
         long hours = duration.toHours();
         long minutes = duration.minusHours(hours).toMinutes();
         long seconds = duration.minusHours(hours).minusMinutes(minutes).getSeconds();
-
         String timeDifference = String.format("%02d:%02d:%02d", hours, minutes, seconds);
 
-
         userTask.setSentTime(timeDifference);
-
-
         userTask.setFileName(uploadFileRequest.getFileName());
         userTask.setFileExtension(uploadFileRequest.getFileExtension());
-
         userTask.setComment(null);
         userTask.setPoints(null);
         userTask.setState(UserTaskState.NOT_EVALUATED);
         userTasksRepository.save(userTask);
 
+        Long lastId = userTasksRepository.findMaxIdBySession(uploadFileRequest.getSession());
 
         try {
-            String userDir = UPLOAD_DIR + "user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + userTask.getId().toString() + "/";
+            String userDir = UPLOAD_DIR + "user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + lastId.toString() + "/";
             Path path = Paths.get(userDir);
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
@@ -102,15 +98,14 @@ public class UserTaskService {
             throw new IOException(e.getMessage());
         }
 
-
-        return getJudgeTableResponses(uploadFileRequest.getUserId(), userTask.getTaskNumber());
+        return getTableResponses(uploadFileRequest.getUserId(), userTask.getTaskNumber());
     }
 
     public List<JudgeTableResponse> getAllTasksByUserIdAndTaskNumber(GetAllTasksRequest getAllTasksRequest) {
-        return getJudgeTableResponses(getAllTasksRequest.getUserId(), getAllTasksRequest.getTaskNumber());
+        return getTableResponses(getAllTasksRequest.getUserId(), getAllTasksRequest.getTaskNumber());
     }
 
-    private List<JudgeTableResponse> getJudgeTableResponses(Long userId, Long taskNumber) {
+    private List<JudgeTableResponse> getTableResponses(Long userId, Long taskNumber) {
         List<UserTasks> userTasks = userTasksRepository
                 .findAllByUserIdAndTaskNumberOrderByIdInSession(userId, taskNumber);
         List<JudgeTableResponse> judgeTableResponses = new ArrayList<>();
@@ -124,6 +119,26 @@ public class UserTaskService {
     public ResponseEntity<Resource> downloadFile(DownloadUserTaskRequest downloadRequest) throws Exception {
         Path file = Paths.get("uploads", "user-tasks", downloadRequest.getUserId().toString(), downloadRequest.getUserTasksId().toString(), downloadRequest.getFileName());
         return taskService.getResourceResponseEntity(file);
+    }
+
+    @Transactional
+    public JudgeTableResponse feedback(FeedbackRequest feedbackRequest) {
+        UserTasks ut = userTasksRepository.findById(feedbackRequest.getUserTasksId())
+                .orElseThrow(() -> new EntityNotFoundException("User task not found"));
+
+        if (feedbackRequest.isAccepted()) {
+            ut.setPoints(feedbackRequest.getPoints());
+            ut.setComment(feedbackRequest.getComment());
+            ut.setState(UserTaskState.ACCEPTED);
+        } else {
+            ut.setPoints(0);
+            ut.setComment(feedbackRequest.getComment());
+            ut.setState(UserTaskState.REJECTED);
+        }
+        userTasksRepository.save(ut);
+
+
+        return taskService.mapToJudgeTableResponse(ut);
     }
 
 }

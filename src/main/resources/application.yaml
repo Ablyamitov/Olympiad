@@ -31,7 +31,6 @@ security:
   jwt:
     secret: YXNkYXNkYXNkYXNmc2RmbXNhZGtvaGZpb3NkdWpmb2RzamZrZGZqT0lBREZKRElPU0pGRElPU0pG
     access:  21600000
-    refresh: 2592000000
 
 storage:
   location: uploads/

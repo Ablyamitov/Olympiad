@@ -26,10 +26,8 @@ public class CustomEmailService implements EmailService {
     public void sendSimpleMail(EmailDetails details) {
 
         try {
-
             SimpleMailMessage mailMessage
                     = new SimpleMailMessage();
-
             mailMessage.setFrom(sender);
             mailMessage.setTo(details.getToAddress());
             mailMessage.setText(details.getBody());
@@ -57,18 +55,15 @@ public class CustomEmailService implements EmailService {
             mimeMessageHelper.setText(details.getBody());
             mimeMessageHelper.setSubject(
                     details.getSubject());
-
             FileSystemResource file
                     = new FileSystemResource(
                     new File(details.getAttachment()));
-
             mimeMessageHelper.addAttachment(
                     file.getFilename(), file);
 
             javaMailSender.send(mimeMessage);
         }
 
-        // Catch block to handle MessagingException
         catch (MessagingException e) {
             throw new MailSendException("Ошибка при отправке сообщения...");
         }

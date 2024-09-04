@@ -1,6 +1,7 @@
 package com.example.olympiad.web.controller;
 
 import com.example.olympiad.service.TaskService;
+import com.example.olympiad.service.UserTaskService;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.contest.ResultTable.ResultTableResponse;
 import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
@@ -27,9 +28,11 @@ import java.util.List;
 @RequestMapping("/api/v1/judge")
 @RequiredArgsConstructor
 @Validated
+
 public class JudgeController {
 
     private final TaskService taskService;
+    private final UserTaskService userTaskService;
 
     //Judge
     @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for judge")
@@ -52,7 +55,7 @@ public class JudgeController {
     })
     @PostMapping("/download")
     public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadUserTaskRequest downloadRequest) throws Exception {
-        return taskService.downloadFile(downloadRequest);
+        return userTaskService.downloadFile(downloadRequest);
     }
 
 
@@ -64,7 +67,7 @@ public class JudgeController {
     })
     @PostMapping("/feedback")
     public ResponseEntity<JudgeTableResponse> feedback(@Valid @RequestBody FeedbackRequest feedbackRequest) {
-        return ResponseEntity.ok(taskService.feedback(feedbackRequest));
+        return ResponseEntity.ok(userTaskService.feedback(feedbackRequest));
     }
 
     @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for admin")

@@ -11,7 +11,6 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Entity
 @Table(name = "tasks")
 @Data
-
 public class Tasks {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,15 +39,4 @@ public class Tasks {
     @JsonBackReference
     @JsonIgnore //
     private Contest contest;
-
-
-    @Override
-    public String toString() {
-        return "Tasks{" +
-                "id=" + id +
-                ", session=" + session +
-                ", task='" + task + '\'' +
-                ", points=" + points +
-                '}';
-    }
 }

@@ -32,7 +32,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class ApplicationConfig {
     private final JwtTokenProvider tokenProvider;
 
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -83,11 +82,17 @@ public class ApplicationConfig {
                     response.setStatus(HttpStatus.FORBIDDEN.value());
                     response.getWriter().write("Unauthorized");
                 }))
+
                 .and()
+
                 .authorizeHttpRequests()
+
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/v1/judge/**").hasRole("JUDGE")
+                .requestMatchers("/api/v1/users/**").hasRole("PARTICIPANT")
                 .anyRequest().authenticated()
                 .and()
                 .anonymous().disable()

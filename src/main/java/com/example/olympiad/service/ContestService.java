@@ -77,7 +77,6 @@ public class ContestService {
 
         if (contest.getStartTime() != null) return contest;
         else throw new ContestNotStartedException("Contest haven't started yet");
-
     }
 
 
@@ -161,10 +160,7 @@ public class ContestService {
             File file = new File("contest_info.txt");
             FileWriter writer = new FileWriter(file);
 
-
             StringBuilder body = new StringBuilder();
-
-
             writer.write("Информация об олимпиаде: " + contest.getName() + "\n");
             String subject = "Информация об олимпиаде: " + contest.getName();
             writer.write("Участники: \n");
@@ -217,7 +213,7 @@ public class ContestService {
                 contest.setState(ContestState.FINISHED);
                 contestRepository.save(contest);
             }
-        }, Date.from(endTime.toInstant())); // Запуск задачи во время endTime
+        }, Date.from(endTime.toInstant()));
 
         GetStartAndEndContestTimeResponse getStartAndEndContestTimeResponse =
                 new GetStartAndEndContestTimeResponse();
@@ -335,16 +331,14 @@ public class ContestService {
         task.setTask(addProblemRequest.getHtmlContent());
         task.setName(addProblemRequest.getName());
         task.setHtmlName(addProblemRequest.getHtmlName());
-
-
         task.setPoints(addProblemRequest.getPoints());
-
         tasksRepository.save(task);
 
+        Long lastId = tasksRepository.findMaxIdBySession(addProblemRequest.getSession());
 
         if (addProblemRequest.getName() != null) {
             try {
-                String userDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + task.getId().toString() + "/";
+                String userDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + lastId.toString() + "/";
                 Path path = Paths.get(userDir);
                 if (!Files.exists(path)) {
                     Files.createDirectories(path);

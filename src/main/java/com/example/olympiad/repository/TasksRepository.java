@@ -11,20 +11,18 @@ import java.util.Set;
 
 public interface TasksRepository extends JpaRepository<Tasks, Long> {
 
-    Tasks findBySessionAndName(Long session, String name);
-
-    //List<Tasks> findAllBySession(Long session);
-
-    List<Tasks> getTasksBySession(Long session);
-
-
-    Tasks findBySessionAndId(Long session, Long id);
 
     void deleteByIdAndSession(Long id, Long session);
 
     LinkedList<Tasks> findAllBySession(Long session);
 
     Long countBySession(Long session);
+
+    Long findMaxIdBySession(Long session);
+
+    boolean existsBySessionAndIdAndName(Long session, Long id, String name);
+
+
 
 
 }

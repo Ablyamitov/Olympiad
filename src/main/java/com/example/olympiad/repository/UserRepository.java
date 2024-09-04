@@ -13,7 +13,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     void deleteAllBySession(Long session);
 
     List<User> findAllBySession(Long session);
-
-
-
 }
