@@ -4,6 +4,7 @@ import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.UserTaskState;
 import com.example.olympiad.domain.contest.UserTasks;
 import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
+import com.example.olympiad.domain.exception.entity.UserNotFoundException;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.UserTasksRepository;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
@@ -141,4 +142,9 @@ public class UserTaskService {
         return taskService.mapToJudgeTableResponse(ut);
     }
 
+    public Long getSessionByUserTasksId(Long userTasksId) {
+        UserTasks userTask = userTasksRepository.findById(userTasksId)
+                .orElseThrow(() -> new EntityNotFoundException("User task not found."));
+        return userTask.getSession();
+    }
 }

@@ -6,6 +6,7 @@ import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.service.UserService;
 import com.example.olympiad.service.UserTaskService;
+import com.example.olympiad.service.contest.checker.aspect.CheckContestState;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
 import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
@@ -59,7 +60,8 @@ public class UserController {
         return ResponseEntity.ok(userService.changeUserInfo(userInfo));
     }
 
-    @Operation(summary = "Get started contest", description = "Returns a started contest for judge or participant")
+    @CheckContestState
+    @Operation(summary = "Get started contest", description = "Returns a started contest for participant")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
             @ApiResponse(responseCode = "504", description = "Gateway timeout - Contest not started",
@@ -75,6 +77,7 @@ public class UserController {
     }
 
 
+    @CheckContestState
     @Operation(summary = "Upload file", description = "Upload and return participant answer files")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -103,6 +106,7 @@ public class UserController {
     }
 
 
+    @CheckContestState
     @Operation(summary = "Get all problems by userId and taskNumber", description = "Returns all participant problems by his userId and taskNumber")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
@@ -113,6 +117,7 @@ public class UserController {
     }
 
 
+    @CheckContestState
     @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for participant from localstorage")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -125,6 +130,7 @@ public class UserController {
     }
 
 
+    @CheckContestState
     @Operation(summary = "Get task file content", description = "Returns a file content task for participant from localstorage")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),

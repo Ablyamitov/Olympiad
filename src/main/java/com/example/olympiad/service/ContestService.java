@@ -369,4 +369,10 @@ public class ContestService {
         tasksRepository.deleteByIdAndSession(deleteProblemRequest.getId(), deleteProblemRequest.getSession());
         return tasksRepository.findAllBySession(deleteProblemRequest.getSession());
     }
+
+    public boolean isContestFinished(Long session) {
+        Contest contest = contestRepository.findBySession(session)
+                .orElseThrow(() -> new ContestNotFoundException("Contest not found."));
+        return contest.getState() == ContestState.FINISHED;
+    }
 }

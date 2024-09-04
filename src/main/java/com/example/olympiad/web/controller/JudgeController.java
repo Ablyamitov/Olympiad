@@ -2,6 +2,7 @@ package com.example.olympiad.web.controller;
 
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.service.UserTaskService;
+import com.example.olympiad.service.contest.checker.aspect.CheckContestState;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
 import com.example.olympiad.web.dto.contest.ResultTable.ResultTableResponse;
 import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
@@ -35,6 +36,7 @@ public class JudgeController {
     private final UserTaskService userTaskService;
 
     //Judge
+    @CheckContestState
     @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for judge")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
@@ -47,6 +49,7 @@ public class JudgeController {
     }
 
 
+    @CheckContestState
     @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for judge from localstorage")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -59,6 +62,7 @@ public class JudgeController {
     }
 
 
+    @CheckContestState
     @Operation(summary = "Send feedback", description = "Send feedback from judge to participant problem")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),

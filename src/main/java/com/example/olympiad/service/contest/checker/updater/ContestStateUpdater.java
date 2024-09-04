@@ -1,4 +1,4 @@
-package com.example.olympiad.service.updater;
+package com.example.olympiad.service.contest.checker.updater;
 
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.ContestState;
