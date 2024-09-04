@@ -24,11 +24,11 @@ public class ContestStateUpdater implements ApplicationListener<ContextRefreshed
         List<Contest> contests = contestRepository.findAll();
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("UTC+3"));
         for (Contest contest : contests) {
-            if (contest.getEndTime().isBefore(now) && contest.getState() == ContestState.IN_PROGRESS) {
+            if (contest.getState() == ContestState.IN_PROGRESS && contest.getEndTime().isBefore(now)) {
                 contest.setState(ContestState.FINISHED);
                 contestRepository.save(contest);
             }
-            else if (contest.getEndTime().isAfter(now) && contest.getState() != ContestState.IN_PROGRESS) {
+            else if (contest.getState() == ContestState.IN_PROGRESS && contest.getEndTime().isAfter(now)) {
                 Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override
