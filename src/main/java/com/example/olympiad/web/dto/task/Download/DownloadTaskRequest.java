@@ -7,15 +7,15 @@ import lombok.Data;
 
 @Data
 public class DownloadTaskRequest {
-    @Min(value = 0, message = "session cannot be less than 0")
+    @Min(value = 0, message = "Сессия должна быть не меньше 0")
     @Schema(description = "Сессия")
     private Long session;
 
-    @Min(value = 0, message = "taskId cannot be less than 0")
+    @Min(value = 0, message = "Номер задания должен быть не меньше 0")
     @Schema(description = "Номер задания")
     private Long taskId;
 
-    @NotBlank(message = "FileName cannot be blank")
+    @NotBlank(message = "Имя файла не должно быть пустым")
     @Schema(description = "Название файла", example = "work1.zip")
     private String fileName;
 }

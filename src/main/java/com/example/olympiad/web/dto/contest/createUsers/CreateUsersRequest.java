@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class CreateUsersRequest {
-    @Min(value = 0, message = "Session count must be at least 0")
+    @Min(value = 0, message = "Сессия должна быть не меньше 0")
     @Schema(description = "Сессия")
     private Long session;
 

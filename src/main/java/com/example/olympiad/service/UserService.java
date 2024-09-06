@@ -35,21 +35,21 @@ public class UserService {
     public User getByUsername(final String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() ->
-                        new UserNotFoundException("User not found."));
+                        new UserNotFoundException("Пользователь не найден"));
     }
 
     @Transactional(readOnly = true)
     public User getByUserId(final Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new UserNotFoundException("User not found."));
+                        new UserNotFoundException("Пользователь не найден"));
     }
 
 
     @Transactional
     public User create(final User user) {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new IllegalStateException("User already exists.");
+            throw new IllegalStateException("Пользователь уже существует");
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         Set<Role> roles = Set.of(Role.ROLE_PARTICIPANT);
@@ -62,7 +62,7 @@ public class UserService {
     @Transactional
     public ChangeUserInfoResponse changeUserInfo(final UserInfo userInfo) {
         User user = userRepository.findByUsername(userInfo.getUsername())
-                .orElseThrow(() -> new UserNotFoundException("User does not exits"));
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не существует"));
 
 
         user.setName(userInfo.getName());

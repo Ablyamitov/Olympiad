@@ -8,19 +8,19 @@ import org.springframework.web.multipart.MultipartFile;
 @Data
 public class AddProblemRequest {
 
-    @Min(value = 0, message = "Session cannot be less than 0")
+    @Min(value = 0, message = "Сессия должна быть не меньше 0")
     private Long session;
 
-    @NotBlank(message = "htmlName cannot be blank")
+    @NotBlank(message = "Имя html файла не должно быть пустым")
     private String htmlName;
 
     private String htmlContent;
 
-    @NotBlank(message = "Name cannot be blank")
+    @NotBlank(message = "Имя задания не должно быть пустым")
     private String name;
 
     private MultipartFile problem;
 
-    @Min(value = 0, message = "Points cannot be less than 0")
+    @Min(value = 0, message = "Количество очков должно быть не меньше 0")
     private int points;
 }

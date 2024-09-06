@@ -7,19 +7,19 @@ import lombok.Data;
 @Data
 public class UserInfo {
 
-    @NotBlank(message = "Username cannot be blank")
+    @NotBlank(message = "Имя пользователя не должно быть пустым")
     @Schema(description = "Ник участника", example = "cweb_1_1")
     private String username;
 
-    @NotBlank(message = "Name cannot be blank")
+    @NotBlank(message = "Имя участника не должно быть пустым")
     @Schema(description = "Имя участника", example = "Иван")
     private String name;
 
     @Schema(description = "Фамилия участника", example = "Иванов")
-    @NotBlank(message = "Surname cannot be blank")
+    @NotBlank(message = "Фамилия участника не должна быть пустой")
     private String surname;
 
     @Schema(description = "Почта участника", example = "ivanov@mail.ru")
-    @NotBlank(message = "Email cannot be blank")
+    @NotBlank(message = "Почта участника не должна быть пустой")
     private String email;
 }

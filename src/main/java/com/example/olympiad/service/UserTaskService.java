@@ -1,6 +1,7 @@
 package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.Contest;
+import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.domain.contest.UserTaskState;
 import com.example.olympiad.domain.contest.UserTasks;
 import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
@@ -48,7 +49,7 @@ public class UserTaskService {
     public List<JudgeTableResponse> uploadFile(UploadFileRequest uploadFileRequest) throws IOException {
 
         Contest contest = contestRepository.findBySession(uploadFileRequest.getSession())
-                .orElseThrow(() -> new ContestNotFoundException("Contest not found"));
+                .orElseThrow(() -> new ContestNotFoundException("Олимпиада не найдена"));
         UploadFileResponse uploadFileResponse = new UploadFileResponse();
         uploadFileResponse.setSession(uploadFileRequest.getSession());
         uploadFileResponse.setUserId(uploadFileRequest.getUserId());
@@ -83,7 +84,11 @@ public class UserTaskService {
         userTask.setState(UserTaskState.NOT_EVALUATED);
         userTasksRepository.save(userTask);
 
-        Long lastId = userTasksRepository.findMaxIdBySession(uploadFileRequest.getSession());
+        //Long lastId = userTasksRepository.findMaxIdBySession(uploadFileRequest.getSession());
+
+        Long lastId = userTasksRepository.findFirstBySessionOrderByIdDesc(uploadFileRequest.getSession())
+                .map(UserTasks::getId)
+                .orElse(null);
 
         try {
             String userDir = UPLOAD_DIR + "user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + lastId.toString() + "/";
@@ -125,7 +130,7 @@ public class UserTaskService {
     @Transactional
     public JudgeTableResponse feedback(FeedbackRequest feedbackRequest) {
         UserTasks ut = userTasksRepository.findById(feedbackRequest.getUserTasksId())
-                .orElseThrow(() -> new EntityNotFoundException("User task not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Ответ участника не найден"));
 
         if (feedbackRequest.isAccepted()) {
             ut.setPoints(feedbackRequest.getPoints());
@@ -144,7 +149,7 @@ public class UserTaskService {
 
     public Long getSessionByUserTasksId(Long userTasksId) {
         UserTasks userTask = userTasksRepository.findById(userTasksId)
-                .orElseThrow(() -> new EntityNotFoundException("User task not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Ответ участника не найден"));
         return userTask.getSession();
     }
 }

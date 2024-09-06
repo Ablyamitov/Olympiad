@@ -5,6 +5,8 @@ import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.service.UserTaskService;
+import com.example.olympiad.web.dto.CustomResponse.CustomResponse;
+import com.example.olympiad.web.dto.CustomResponse.ResponseUtil;
 import com.example.olympiad.web.dto.contest.ChangeDuration.ChangeDurationRequest;
 import com.example.olympiad.web.dto.contest.ChangeName.ChangeNameRequest;
 import com.example.olympiad.web.dto.contest.CreateContest.ContestAndFileResponse;
@@ -57,6 +59,18 @@ public class AdminController {
     private final UserTaskService userTaskService;
 
 
+//    @Operation(summary = "Create contest", description = "Return created contest and users")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+//            @ApiResponse(responseCode = "404", description = "Bad request - Contest already exists",
+//                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+//    })
+//    @PostMapping("/createContest")
+//    public ResponseEntity<ContestAndFileResponse> createContest(@Valid @RequestBody final ContestRequest contestRequest) throws IOException {
+//        ContestAndFileResponse response = contestService.create(contestRequest);
+//        return ResponseEntity.ok(response);
+//    }
+
     @Operation(summary = "Create contest", description = "Return created contest and users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -64,9 +78,9 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping("/createContest")
-    public ResponseEntity<ContestAndFileResponse> createContest(@Valid @RequestBody final ContestRequest contestRequest) throws IOException {
+    public ResponseEntity<CustomResponse<ContestAndFileResponse>> createContest(@Valid @RequestBody final ContestRequest contestRequest) throws IOException {
         ContestAndFileResponse response = contestService.create(contestRequest);
-        return ResponseEntity.ok(response);
+        return ResponseUtil.createResponse(response, true, null);
     }
 
 

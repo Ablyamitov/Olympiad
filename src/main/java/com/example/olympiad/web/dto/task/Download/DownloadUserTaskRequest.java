@@ -8,15 +8,15 @@ import lombok.Data;
 @Data
 public class DownloadUserTaskRequest {
 
-    @Min(value = 0, message = "UserId cannot be less than 0")
+    @Min(value = 0, message = "id пользователя должно быть не меньше 0")
     @Schema(description = "id пользователя")
     private Long userId;
 
-    @Min(value = 0, message = "UserTasksId cannot be less than 0")
+    @Min(value = 0, message = "id ответа участника должно быть не меньше 0")
     @Schema(description = "id ответа участника")
     private Long userTasksId;
 
-    @NotBlank(message = "FileName cannot be blank")
+    @NotBlank(message = "Имя файла должно быть не пустым")
     @Schema(description = "Имя файла ответа участника", example = "index.js")
     private String fileName;
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class GetAllContestsRequest {
-    @Min(value = 1, message = "page cannot be less then 1")
+    @Min(value = 1, message = "Страница должна быть не меньше 1")
     @Schema(description = "Страница")
     private Integer page;
 }

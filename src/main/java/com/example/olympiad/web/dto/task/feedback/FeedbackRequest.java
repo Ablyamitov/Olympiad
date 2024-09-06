@@ -9,7 +9,7 @@ import lombok.Data;
 @ValidFeedbackRequest
 public class FeedbackRequest {
 
-    @Min(value = 0, message = "UserTasksId must be at least 0")
+    @Min(value = 0, message = "id ответа должно быть не меньше 0")
     @Schema(description = "id ответа участника")
     private Long userTasksId;
 

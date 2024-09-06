@@ -73,10 +73,10 @@ public class ContestService {
             backoff = @Backoff(delay = 5000))
     public Contest getContestOptionalBySession(Long session) {
         Contest contest = contestRepository.findBySession(session)
-                .orElseThrow(() -> new EntityNotFoundException("Contest does not exist."));
+                .orElseThrow(() -> new EntityNotFoundException("Олимпиады не существует"));
 
         if (contest.getStartTime() != null) return contest;
-        else throw new ContestNotStartedException("Contest haven't started yet");
+        else throw new ContestNotStartedException("Олимпиада ещё не начата");
     }
 
 
@@ -93,7 +93,7 @@ public class ContestService {
     @Transactional
     public FileResponse createUsers(final CreateUsersRequest createUsersRequest) throws IOException {
         Contest contest = contestRepository.findBySession(createUsersRequest.getSession())
-                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+                .orElseThrow(() -> new IllegalStateException("Олимпиады не существует"));
         Map<User, String> participants = userService.createParticipants(createUsersRequest.getParticipantCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getParticipantCount());
         Map<User, String> judges = userService.createJudges(createUsersRequest.getJudgeCount(), contest.getUsernamePrefix(), createUsersRequest.getSession(), contest.getJudgeCount());
         contest.setParticipantCount(contest.getParticipantCount() + createUsersRequest.getParticipantCount());
@@ -195,9 +195,9 @@ public class ContestService {
     public GetStartAndEndContestTimeResponse start(final Long contestSession) {
         Contest contest = contestRepository.findBySession(contestSession)
                 .orElseThrow(() ->
-                        new ContestNotFoundException("Contest not found."));
+                        new ContestNotFoundException("Олимпиада не найдена"));
         if (contest.getStartTime() != null) {
-            throw new ContestStartedYetException("Contest have started yet");
+            throw new ContestStartedYetException("Олимпиада уже начата");
         }
         ZonedDateTime startTime = ZonedDateTime.now(ZoneId.of("UTC+3")); // Текущее время
         ZonedDateTime endTime = startTime.plus(parseToDuration(contest.getDuration()));
@@ -234,7 +234,7 @@ public class ContestService {
     @Transactional
     public void deleteContest(Long contestSession) {
         Contest contest = contestRepository.findBySession(contestSession)
-                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+                .orElseThrow(() -> new IllegalStateException("Олимпиады не существует"));
         userService.deleteParticipantsAndJudges(contest);
         contestRepository.delete(contest);
     }
@@ -291,16 +291,16 @@ public class ContestService {
 
     public Contest getContestBySession(Long session) {
         return contestRepository.findBySession(session)
-                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+                .orElseThrow(() -> new IllegalStateException("Олимпиады не существует"));
     }
 
 
     @Transactional
     public String changeDuration(ChangeDurationRequest changeDurationRequest) {
         Contest contest = contestRepository.findBySession(changeDurationRequest.getSession())
-                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+                .orElseThrow(() -> new IllegalStateException("Олимпиады не существует"));
         if (contest.getState() == ContestState.IN_PROGRESS) {
-            throw new ContestStartedYetException("Contest started yet");
+            throw new ContestStartedYetException("Олимпиада уже начата");
         }
         contest.setDuration(changeDurationRequest.getNewDuration());
         contestRepository.save(contest);
@@ -310,9 +310,9 @@ public class ContestService {
     @Transactional
     public String changeName(ChangeNameRequest changeNameRequest) {
         Contest contest = contestRepository.findBySession(changeNameRequest.getSession())
-                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+                .orElseThrow(() -> new IllegalStateException("Олимпиады не существует"));
         if (contest.getState() == ContestState.IN_PROGRESS) {
-            throw new ContestStartedYetException("Contest started yet");
+            throw new ContestStartedYetException("Олимпиада уже начата");
         }
         contest.setName(changeNameRequest.getName());
         contestRepository.save(contest);
@@ -322,7 +322,7 @@ public class ContestService {
     @Transactional
     public List<Tasks> addProblems(AddProblemRequest addProblemRequest) throws IOException {
         Contest contest = contestRepository.findBySession(addProblemRequest.getSession())
-                .orElseThrow(() -> new IllegalStateException("Contest does not exist."));
+                .orElseThrow(() -> new IllegalStateException("Олимпиады не существует"));
 
 
         Tasks task = new Tasks();
@@ -372,7 +372,7 @@ public class ContestService {
 
     public boolean isContestFinished(Long session) {
         Contest contest = contestRepository.findBySession(session)
-                .orElseThrow(() -> new ContestNotFoundException("Contest not found."));
+                .orElseThrow(() -> new ContestNotFoundException("Олимпиада не найдена"));
         return contest.getState() == ContestState.FINISHED;
     }
 }
