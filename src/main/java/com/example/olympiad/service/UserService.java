@@ -1,7 +1,7 @@
 package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.Contest;
-import com.example.olympiad.domain.exception.entity.UserNotFoundException;
+import com.example.olympiad.domain.exception.entity.user.UserNotFoundException;
 import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.UserRepository;

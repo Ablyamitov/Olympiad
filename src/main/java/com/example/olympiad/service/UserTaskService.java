@@ -1,11 +1,9 @@
 package com.example.olympiad.service;
 
 import com.example.olympiad.domain.contest.Contest;
-import com.example.olympiad.domain.contest.Tasks;
 import com.example.olympiad.domain.contest.UserTaskState;
 import com.example.olympiad.domain.contest.UserTasks;
-import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
-import com.example.olympiad.domain.exception.entity.UserNotFoundException;
+import com.example.olympiad.domain.exception.entity.contest.ContestNotFoundException;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.UserTasksRepository;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;

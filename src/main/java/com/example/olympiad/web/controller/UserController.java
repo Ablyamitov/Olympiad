@@ -1,7 +1,7 @@
 package com.example.olympiad.web.controller;
 
 import com.example.olympiad.domain.contest.Contest;
-import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
+import com.example.olympiad.domain.exception.entity.contest.ContestNotStartedException;
 import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.service.UserService;
@@ -28,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;

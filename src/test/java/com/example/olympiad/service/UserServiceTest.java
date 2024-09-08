@@ -1,6 +1,6 @@
 package com.example.olympiad.service;
 
-import com.example.olympiad.domain.exception.entity.UserNotFoundException;
+import com.example.olympiad.domain.exception.entity.user.UserNotFoundException;
 import com.example.olympiad.domain.user.Role;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.UserRepository;
@@ -19,7 +19,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {

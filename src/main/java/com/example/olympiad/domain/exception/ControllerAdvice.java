@@ -1,13 +1,13 @@
 package com.example.olympiad.domain.exception;
 
 import com.example.olympiad.domain.exception.access.AccessDeniedException;
-import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
-import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
-import com.example.olympiad.domain.exception.entity.ContestStartedYetException;
-import com.example.olympiad.domain.exception.entity.UserNotFoundException;
+import com.example.olympiad.domain.exception.entity.contest.ContestNotFoundException;
+import com.example.olympiad.domain.exception.entity.contest.ContestNotStartedException;
+import com.example.olympiad.domain.exception.entity.contest.ContestStartedYetException;
+import com.example.olympiad.domain.exception.entity.task.NoTasksException;
+import com.example.olympiad.domain.exception.entity.user.UserNotFoundException;
 import com.example.olympiad.web.dto.CustomResponse.CustomResponse;
 import com.example.olympiad.web.dto.CustomResponse.ResponseUtil;
-import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,6 @@ import org.springdoc.api.ErrorMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -127,5 +126,13 @@ public class ControllerAdvice {
         List<String> errors = new ArrayList<>();
         errors.add(exception.getMessage());
         return ResponseUtil.createResponse(null, false, errors);
+    }
+
+    @ExceptionHandler(NoTasksException.class)
+    public ResponseEntity<ErrorMessage> handleNoTasksException(NoTasksException exception) {
+        log.error(exception.getMessage(), exception);
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorMessage(exception.getMessage()));
     }
 }

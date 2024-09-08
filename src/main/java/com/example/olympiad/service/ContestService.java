@@ -3,9 +3,10 @@ package com.example.olympiad.service;
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.ContestState;
 import com.example.olympiad.domain.contest.Tasks;
-import com.example.olympiad.domain.exception.entity.ContestNotFoundException;
-import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
-import com.example.olympiad.domain.exception.entity.ContestStartedYetException;
+import com.example.olympiad.domain.exception.entity.contest.ContestNotFoundException;
+import com.example.olympiad.domain.exception.entity.contest.ContestNotStartedException;
+import com.example.olympiad.domain.exception.entity.contest.ContestStartedYetException;
+import com.example.olympiad.domain.exception.entity.task.NoTasksException;
 import com.example.olympiad.domain.mail.EmailDetails;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
@@ -199,6 +200,11 @@ public class ContestService {
         if (contest.getStartTime() != null) {
             throw new ContestStartedYetException("Олимпиада уже начата");
         }
+
+        if (contest.getTasks() == null || contest.getTasks().isEmpty()) {
+            throw new NoTasksException("Невозможно начать олимпиаду без заданий");
+        }
+
         ZonedDateTime startTime = ZonedDateTime.now(ZoneId.of("UTC+3")); // Текущее время
         ZonedDateTime endTime = startTime.plus(parseToDuration(contest.getDuration()));
         contest.setStartTime(startTime);

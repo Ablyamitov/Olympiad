@@ -3,7 +3,7 @@ package com.example.olympiad.service;
 import com.example.olympiad.domain.contest.Contest;
 import com.example.olympiad.domain.contest.ContestState;
 import com.example.olympiad.domain.contest.Tasks;
-import com.example.olympiad.domain.exception.entity.ContestNotStartedException;
+import com.example.olympiad.domain.exception.entity.contest.ContestNotStartedException;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.repository.ContestRepository;
 import com.example.olympiad.repository.TasksRepository;
@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

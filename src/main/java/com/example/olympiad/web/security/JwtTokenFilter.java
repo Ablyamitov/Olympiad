@@ -1,6 +1,6 @@
 package com.example.olympiad.web.security;
 
-import com.example.olympiad.domain.exception.entity.UserNotFoundException;
+import com.example.olympiad.domain.exception.entity.user.UserNotFoundException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package com.example.olympiad.service;
 
-import com.example.olympiad.domain.exception.entity.UserNotFoundException;
+import com.example.olympiad.domain.exception.entity.user.UserNotFoundException;
 import com.example.olympiad.domain.user.User;
 import com.example.olympiad.web.dto.auth.JwtRequest;
 import com.example.olympiad.web.dto.auth.JwtResponse;
@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.authentication.AuthenticationManager;
 import com.example.olympiad.domain.user.Role;
-import com.example.olympiad.domain.user.User;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.util.Set;
