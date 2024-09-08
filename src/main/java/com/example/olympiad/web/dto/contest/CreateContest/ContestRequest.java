@@ -3,6 +3,7 @@ package com.example.olympiad.web.dto.contest.CreateContest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
@@ -26,6 +27,7 @@ public class ContestRequest {
     private String usernamePrefix;
 
     @NotBlank(message = "Длительность не должна быть пустой")
+    @Pattern(regexp = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$", message = "Длительность должна быть в формате 'HH:mm'")
     @Schema(description = "Длительность олимпиады", example = "01:20")
     private String duration;
 

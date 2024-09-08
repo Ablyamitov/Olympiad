@@ -11,7 +11,7 @@ public class ChangeDurationRequest {
     @Min(value = 0, message = "Сессия должна быть не меньше 0")
     @Schema(description = "Сессия")
     private Long session;
-    @Pattern(regexp = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$", message = "Новая длительность должен быть в формате 'HH:mm'")
+    @Pattern(regexp = "^([01]?[0-9]|2[0-3]):[0-5][0-9]$", message = "Новая длительность должна быть в формате 'HH:mm'")
     @Schema(description = "Новая длительность олимпиады", example = "02:30")
     private String newDuration;
 }
