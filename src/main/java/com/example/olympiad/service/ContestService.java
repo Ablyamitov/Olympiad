@@ -241,7 +241,7 @@ public class ContestService {
 
     public GetAllContestsResponse getAllContests(Integer page) {
         int pageSize = 6;
-        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by("session"));
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC,"session"));
 
         Page<Contest> pagedResult = contestRepository.findAll(pageable);
 
@@ -250,7 +250,7 @@ public class ContestService {
 
     public GetAllContestsResponse getAllContestsContainingNameOrState(Integer page, String name, String statesString) {
         int pageSize = 6;
-        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by("session"));
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC,"session"));
         List<ContestState> states;
         if (name == null) name = "";
         if (statesString != null) {
