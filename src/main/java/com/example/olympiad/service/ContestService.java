@@ -158,8 +158,10 @@ public class ContestService {
                         LinkedHashMap::new
                 ));
         try {
+            log.info("Тут все норм");
             File file = new File("contest_info.txt");
-
+            log.info("после файл");
+            log.info(file.getName());
             FileWriter writer = new FileWriter(file);
             log.info("ВОТ ТУТ ФАЙЛ ВРАЙТЕР");
             StringBuilder body = new StringBuilder();
