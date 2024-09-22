@@ -158,15 +158,10 @@ public class ContestService {
                         LinkedHashMap::new
                 ));
         try {
-            log.info("Тут все норм");
             File file = new File("contest_info.txt");
-            log.info("после файл");
-            log.info(file.getName());
             FileWriter writer = new FileWriter(file);
-            log.info("ВОТ ТУТ ФАЙЛ ВРАЙТЕР");
             StringBuilder body = new StringBuilder();
             writer.write("Информация об олимпиаде: " + contest.getName() + "\n");
-            log.info("ВОТ ТУТ ФАЙЛ информация об олимпиаде");
             String subject = "Информация об олимпиаде: " + contest.getName();
             writer.write("Участники: \n");
             body.append("Участники: \n");
@@ -179,9 +174,7 @@ public class ContestService {
                 writer.write("Username: " + entry.getKey().getUsername() + ", Password: " + entry.getValue() + "\n");
                 body.append("Username: ").append(entry.getKey().getUsername()).append(", Password: ").append(entry.getValue()).append("\n");
             }
-            log.info("ТУТ перед закрытие");
             writer.close();
-            log.info("ТУТ ЗАКРЫЛСЯ");
             EmailDetails emailDetails = new EmailDetails();
             emailDetails.setToAddress(toAddress);
             emailDetails.setSubject(subject);
