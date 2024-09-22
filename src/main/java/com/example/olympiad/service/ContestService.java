@@ -159,6 +159,7 @@ public class ContestService {
                 ));
         try {
             File file = new File("contest_info.txt");
+            log.info("Файл создался");
             FileWriter writer = new FileWriter(file);
 
             StringBuilder body = new StringBuilder();
