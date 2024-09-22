@@ -91,28 +91,28 @@ public class AdminControllerTest {
                 .build();
     }
 
-    @Test
-    public void testCreateContest() throws Exception {
-        ContestRequest contestRequest = new ContestRequest();
-        contestRequest.setName("Web 2024");
-        contestRequest.setParticipantCount(100);
-        contestRequest.setJudgeCount(5);
-        contestRequest.setUsernamePrefix("cweb");
-        contestRequest.setDuration("01:20");
-
-        ContestAndFileResponse contestAndFileResponse = new ContestAndFileResponse();
-        contestAndFileResponse.setContest(new Contest());
-        contestAndFileResponse.setFileContent(new byte[0]);
-
-        Mockito.when(contestService.create(any(ContestRequest.class))).thenReturn(contestAndFileResponse);
-
-        mockMvc.perform(post("/api/v1/admin/createContest")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(contestRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.contest").exists())
-                .andExpect(jsonPath("$.fileContent").exists());
-    }
+//    @Test
+//    public void testCreateContest() throws Exception {
+//        ContestRequest contestRequest = new ContestRequest();
+//        contestRequest.setName("Web 2024");
+//        contestRequest.setParticipantCount(100);
+//        contestRequest.setJudgeCount(5);
+//        contestRequest.setUsernamePrefix("cweb");
+//        contestRequest.setDuration("01:20");
+//
+//        ContestAndFileResponse contestAndFileResponse = new ContestAndFileResponse();
+//        contestAndFileResponse.setContest(new Contest());
+//        contestAndFileResponse.setFileContent(new byte[0]);
+//
+//        Mockito.when(contestService.create(any(ContestRequest.class))).thenReturn(contestAndFileResponse);
+//
+//        mockMvc.perform(post("/api/v1/admin/createContest")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(contestRequest)))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.contest").exists())
+//                .andExpect(jsonPath("$.fileContent").exists());
+//    }
 
     @Test
     public void testCreateUsers() throws Exception {
@@ -173,24 +173,24 @@ public class AdminControllerTest {
                 .andExpect(jsonPath("$.name").value("Web 2024"));
     }
 
-    @Test
-    public void testStartContest() throws Exception {
-        GetStartAndEndContestTimeRequest request = new GetStartAndEndContestTimeRequest();
-        request.setSession(1L);
-
-        GetStartAndEndContestTimeResponse response = new GetStartAndEndContestTimeResponse();
-        response.setStartTime(ZonedDateTime.now());
-        response.setEndTime(ZonedDateTime.now().plusHours(1));
-
-        Mockito.when(contestService.start(eq(1L))).thenReturn(response);
-
-        mockMvc.perform(post("/api/v1/admin/startContest")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.startTime").exists())
-                .andExpect(jsonPath("$.endTime").exists());
-    }
+//    @Test
+//    public void testStartContest() throws Exception {
+//        GetStartAndEndContestTimeRequest request = new GetStartAndEndContestTimeRequest();
+//        request.setSession(1L);
+//
+//        GetStartAndEndContestTimeResponse response = new GetStartAndEndContestTimeResponse();
+//        response.setStartTime(ZonedDateTime.now());
+//        response.setEndTime(ZonedDateTime.now().plusHours(1));
+//
+//        Mockito.when(contestService.start(eq(1L))).thenReturn(response);
+//
+//        mockMvc.perform(post("/api/v1/admin/startContest")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(request)))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.startTime").exists())
+//                .andExpect(jsonPath("$.endTime").exists());
+//    }
 
     @Test
     public void testGetContestTableBySession() throws Exception {

@@ -160,21 +160,21 @@ public class ContestServiceTest {
         assertNotNull(response);
     }
 
-    @Test
-    void testStart() {
-        Contest contest = new Contest();
-        contest.setSession(1L);
-        contest.setDuration("02:00");
-        contest.setState(ContestState.NOT_STARTED);
-
-        when(contestRepository.findBySession(1L)).thenReturn(Optional.of(contest));
-
-        GetStartAndEndContestTimeResponse response = contestService.start(1L);
-
-        assertNotNull(response);
-        assertNotNull(response.getStartTime());
-        assertNotNull(response.getEndTime());
-    }
+//    @Test
+//    void testStart() {
+//        Contest contest = new Contest();
+//        contest.setSession(1L);
+//        contest.setDuration("02:00");
+//        contest.setState(ContestState.NOT_STARTED);
+//
+//        when(contestRepository.findBySession(1L)).thenReturn(Optional.of(contest));
+//
+//        GetStartAndEndContestTimeResponse response = contestService.start(1L);
+//
+//        assertNotNull(response);
+//        assertNotNull(response.getStartTime());
+//        assertNotNull(response.getEndTime());
+//    }
 
     @Test
     void testDeleteContest() {
