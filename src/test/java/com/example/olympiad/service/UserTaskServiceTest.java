@@ -55,24 +55,24 @@ public class UserTaskServiceTest {
     @Value("${storage.location}")
     private String UPLOAD_DIR;
 
-//    @Test
-//    public void testUploadFile() throws Exception {
-//        UploadFileRequest uploadFileRequest = new UploadFileRequest();
-//        uploadFileRequest.setSession(1L);
-//        uploadFileRequest.setUserId(1L);
-//        uploadFileRequest.setTaskNumber(1L);
-//        uploadFileRequest.setFile(new MockMultipartFile("file", "file.txt", MediaType.TEXT_PLAIN_VALUE, "file content".getBytes()));
-//
-//        Contest contest = new Contest();
-//        contest.setStartTime(ZonedDateTime.now());
-//
-//        when(contestRepository.findBySession(uploadFileRequest.getSession())).thenReturn(Optional.of(contest));
-//        when(userTasksRepository.countBySession(uploadFileRequest.getSession())).thenReturn(0L);
-//
-//        List<JudgeTableResponse> judgeTableResponses = userTaskService.uploadFile(uploadFileRequest);
-//
-//        assertNotNull(judgeTableResponses);
-//    }
+    @Test
+    public void testUploadFile() throws Exception {
+        UploadFileRequest uploadFileRequest = new UploadFileRequest();
+        uploadFileRequest.setSession(1L);
+        uploadFileRequest.setUserId(1L);
+        uploadFileRequest.setTaskNumber(1L);
+        uploadFileRequest.setFile(new MockMultipartFile("file", "file.txt", MediaType.TEXT_PLAIN_VALUE, "file content".getBytes()));
+
+        Contest contest = new Contest();
+        contest.setStartTime(ZonedDateTime.now());
+
+        when(contestRepository.findBySession(uploadFileRequest.getSession())).thenReturn(Optional.of(contest));
+        when(userTasksRepository.countBySession(uploadFileRequest.getSession())).thenReturn(0L);
+
+        List<JudgeTableResponse> judgeTableResponses = userTaskService.uploadFile(uploadFileRequest);
+
+        assertNotNull(judgeTableResponses);
+    }
     @Test
     public void testGetAllTasksByUserIdAndTaskNumber() {
         // Создайте объект GetAllTasksRequest и настройте его по вашему усмотрению
