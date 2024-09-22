@@ -175,6 +175,7 @@ public class ContestService {
                 body.append("Username: ").append(entry.getKey().getUsername()).append(", Password: ").append(entry.getValue()).append("\n");
             }
             writer.close();
+
             EmailDetails emailDetails = new EmailDetails();
             emailDetails.setToAddress(toAddress);
             emailDetails.setSubject(subject);
