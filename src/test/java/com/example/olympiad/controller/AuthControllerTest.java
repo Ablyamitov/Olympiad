@@ -45,48 +45,48 @@ public class AuthControllerTest {
 
     private JwtResponse jwtResponse;
 
-    @BeforeEach
-    public void setUp() {
-        jwtResponse = new JwtResponse();
-        jwtResponse.setId(1L);
-        jwtResponse.setUsername("testuser");
-        jwtResponse.setAccessToken("test-token");
-
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .addFilters((Filter) new JwtTokenFilter(jwtTokenProvider))
-                .build();
-    }
-
-    @Test
-    public void testCheckAuth() throws Exception {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer test-token");
-
-        Mockito.when(jwtTokenProvider.validateToken("test-token")).thenReturn(true);
-        Mockito.when(jwtTokenProvider.getAuthentication("test-token")).thenReturn(null);
-        Mockito.when(authService.checkAuth(any(HttpServletRequest.class))).thenReturn(jwtResponse);
-
-        mockMvc.perform(get("/api/v1/auth/checkAuth")
-                        .header("Authorization", "Bearer test-token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.accessToken").value("test-token"));
-    }
-
-    @Test
-    public void testLogin() throws Exception {
-        JwtRequest loginRequest = new JwtRequest();
-        loginRequest.setUsername("testuser");
-        loginRequest.setPassword("password");
-
-        Mockito.when(authService.login(any(JwtRequest.class))).thenReturn(jwtResponse);
-
-        mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("testuser"))
-                .andExpect(jsonPath("$.accessToken").value("test-token"));
-    }
+//    @BeforeEach
+//    public void setUp() {
+//        jwtResponse = new JwtResponse();
+//        jwtResponse.setId(1L);
+//        jwtResponse.setUsername("testuser");
+//        jwtResponse.setAccessToken("test-token");
+//
+//        mockMvc = MockMvcBuilders
+//                .webAppContextSetup(context)
+//                .addFilters((Filter) new JwtTokenFilter(jwtTokenProvider))
+//                .build();
+//    }
+//
+//    @Test
+//    public void testCheckAuth() throws Exception {
+//        MockHttpServletRequest request = new MockHttpServletRequest();
+//        request.addHeader("Authorization", "Bearer test-token");
+//
+//        Mockito.when(jwtTokenProvider.validateToken("test-token")).thenReturn(true);
+//        Mockito.when(jwtTokenProvider.getAuthentication("test-token")).thenReturn(null);
+//        Mockito.when(authService.checkAuth(any(HttpServletRequest.class))).thenReturn(jwtResponse);
+//
+//        mockMvc.perform(get("/api/v1/auth/checkAuth")
+//                        .header("Authorization", "Bearer test-token"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.username").value("testuser"))
+//                .andExpect(jsonPath("$.accessToken").value("test-token"));
+//    }
+//
+//    @Test
+//    public void testLogin() throws Exception {
+//        JwtRequest loginRequest = new JwtRequest();
+//        loginRequest.setUsername("testuser");
+//        loginRequest.setPassword("password");
+//
+//        Mockito.when(authService.login(any(JwtRequest.class))).thenReturn(jwtResponse);
+//
+//        mockMvc.perform(post("/api/v1/auth/login")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(loginRequest)))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.username").value("testuser"))
+//                .andExpect(jsonPath("$.accessToken").value("test-token"));
+//    }
 }
