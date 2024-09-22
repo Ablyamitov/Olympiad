@@ -43,6 +43,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -84,6 +85,7 @@ public class AdminController {
     }
 
 
+
     @Operation(summary = "Create users for contest", description = "Return created users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -95,13 +97,24 @@ public class AdminController {
         FileResponse response = contestService.createUsers(createUsersRequest);
         return ResponseEntity.ok(response);
     }
+//    @Operation(summary = "Create users for contest", description = "Return created users")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+//            @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
+//                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+//    })
+//    @PostMapping("/createUsers")
+//    public ResponseEntity<CustomResponse<FileResponse>> createUsers(@Valid @RequestBody final CreateUsersRequest createUsersRequest) throws IOException {
+//        FileResponse response = contestService.createUsers(createUsersRequest);
+//        return ResponseUtil.createResponse(response, true, null);
+//    }
+
 
     @Operation(summary = "Get contests by page and total count", description = "Return contests limited by page and total contests count")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
     @PostMapping("/contests")
-
     public ResponseEntity<GetAllContestsResponse> getAllContests(@Valid @RequestBody final GetAllContestsRequest getAllContestsRequest) {
         return ResponseEntity.ok(contestService.getAllContests(getAllContestsRequest.getPage()));
     }

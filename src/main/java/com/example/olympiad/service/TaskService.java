@@ -15,10 +15,19 @@ import com.example.olympiad.web.dto.contest.ResultTable.UserAnswers;
 import com.example.olympiad.web.dto.contest.ResultTable.Users;
 import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
 import com.example.olympiad.web.dto.task.feedback.FeedbackRequest;
+import com.github.junrar.Archive;
 import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.FileHeader;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.tika.Tika;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -27,14 +36,17 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.List;
 
 @Service
@@ -56,6 +68,36 @@ public class TaskService {
         Files.delete(tempPath);
 
     }
+
+    public void handleAddProblemFile(InputStream fileStream, String destDir, String fileName) throws IOException, RarException {
+
+        Path tempPath = Files.createTempFile("temp", ".zip");
+        Files.copy(fileStream, tempPath, StandardCopyOption.REPLACE_EXISTING);
+
+        try (ZipFile zipFile = new ZipFile(tempPath.toFile())) {
+            Enumeration<ZipArchiveEntry> entries = zipFile.getEntries();
+            while (entries.hasMoreElements()) {
+                ZipArchiveEntry entry = entries.nextElement();
+                Path filePath = Paths.get(destDir, entry.getName());
+                if (entry.isDirectory()) {
+                    Files.createDirectories(filePath);
+                } else {
+                    Files.createDirectories(filePath.getParent());
+                    try (InputStream entryStream = zipFile.getInputStream(entry);
+                         FileOutputStream outputStream = new FileOutputStream(filePath.toFile())) {
+                        IOUtils.copy(entryStream, outputStream);
+                    }
+                }
+            }
+        } finally {
+            Files.delete(tempPath);
+        }
+
+
+
+    }
+
+
 
     private void saveFile(InputStream fileStream, String destDir, String fileName) throws IOException {
         Path filePath = Paths.get(destDir, fileName);
@@ -125,7 +167,8 @@ public class TaskService {
         for (User u : fullUsers) {
             if (u.getRoles().contains(Role.ROLE_JUDGE)) continue;
             Users userInfo = new Users();
-            userInfo.setName(u.getName() + " "  + u.getSurname());
+            if(u.getName()==null || u.getSurname()==null) userInfo.setName("Аноним");
+            else userInfo.setName(u.getName() + " "  + u.getSurname());
             userInfo.setUsername(u.getUsername());
             userInfo.setEmail(u.getEmail());
 

@@ -90,14 +90,18 @@ public class ApplicationConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/images/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/judge/**").hasRole("JUDGE")
                 .requestMatchers("/api/v1/users/**").hasRole("PARTICIPANT")
+
                 .anyRequest().authenticated()
                 .and()
                 .anonymous().disable()
                 .addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class)
                 .addFilterBefore(new JwtTokenFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
+
     }
+
 }

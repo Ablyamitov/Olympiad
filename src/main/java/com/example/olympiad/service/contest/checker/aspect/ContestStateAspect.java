@@ -61,12 +61,14 @@ public class ContestStateAspect {
                     session = ((GetAllTasksRequest) arg).getSession();
                 } else if (arg instanceof DownloadTaskRequest) {
                     session = ((DownloadTaskRequest) arg).getSession();
+                } else if (arg instanceof Long) {
+                    session = (Long) arg;
                 }
             }
         }
 
         if (session != null && contestService.isContestFinished(session)) {
-            throw new AccessDeniedException("Access denied: Contest is finished.");
+            throw new AccessDeniedException("Доступ запрещён: Олимпиада уже завершена.");
         }
 
         return joinPoint.proceed();

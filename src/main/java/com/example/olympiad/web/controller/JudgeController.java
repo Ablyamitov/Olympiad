@@ -1,5 +1,7 @@
 package com.example.olympiad.web.controller;
 
+import com.example.olympiad.domain.contest.Contest;
+import com.example.olympiad.service.ContestService;
 import com.example.olympiad.service.TaskService;
 import com.example.olympiad.service.UserTaskService;
 import com.example.olympiad.service.contest.checker.aspect.CheckContestState;
@@ -34,6 +36,22 @@ public class JudgeController {
 
     private final TaskService taskService;
     private final UserTaskService userTaskService;
+    private final ContestService contestService;
+
+
+
+    @CheckContestState
+    @Operation(summary = "Get contest by session", description = "Return contest by session")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+            @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
+                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+    })
+    @GetMapping("/contest/{session}")
+    public ResponseEntity<Contest> getContestBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
+        Contest contest = contestService.getContestBySession(session);
+        return ResponseEntity.ok(contest);
+    }
 
     //Judge
     @CheckContestState
@@ -41,9 +59,8 @@ public class JudgeController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
-    @GetMapping("/contest/{session}")
+    @GetMapping("/contest/{session}/table")
     public ResponseEntity<List<JudgeTableResponse>> getContestTableBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
-
         return ResponseEntity.ok(taskService.getJudgeTableBySession(session));
 
     }
@@ -74,7 +91,7 @@ public class JudgeController {
         return ResponseEntity.ok(userTaskService.feedback(feedbackRequest));
     }
 
-    @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for admin")
+    @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for judge")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })

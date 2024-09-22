@@ -8,6 +8,7 @@ import com.example.olympiad.service.UserService;
 import com.example.olympiad.service.UserTaskService;
 import com.example.olympiad.service.contest.checker.aspect.CheckContestState;
 import com.example.olympiad.web.dto.contest.JudgeTable.JudgeTableResponse;
+import com.example.olympiad.web.dto.contest.ResultTable.ResultTableResponse;
 import com.example.olympiad.web.dto.task.Download.DownloadTaskRequest;
 import com.example.olympiad.web.dto.task.Download.DownloadUserTaskRequest;
 import com.example.olympiad.web.dto.task.GetAllTasks.GetAllTasksRequest;
@@ -48,6 +49,7 @@ public class UserController {
     private final UserTaskService userTaskService;
 
 
+    @CheckContestState
     @Operation(summary = "Set user info", description = "Returns the participant with his specified first name, last name and email")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -71,7 +73,7 @@ public class UserController {
         try {
             return ResponseEntity.ok(contestService.getContestOptionalBySession(session));
         } catch (ContestNotStartedException e) {
-            throw new ContestNotStartedException("Contest not started");
+            throw new ContestNotStartedException("Олимпиада не начата");
         }
     }
 
@@ -139,6 +141,17 @@ public class UserController {
     @PostMapping("/download-task")
     public ResponseEntity<Resource> downloadTask(@Valid @RequestBody final DownloadTaskRequest downloadTaskRequest) throws Exception {
         return taskService.downloadFile(downloadTaskRequest);
+    }
+
+    @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved")
+    })
+    @GetMapping("/contest/user-problems/result/{session}")
+    public ResponseEntity<ResultTableResponse> getContestResultTableBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
+
+        return ResponseEntity.ok(taskService.getResultTableResponse(session));
+
     }
 
 }

@@ -205,7 +205,7 @@ public class ContestService {
             throw new NoTasksException("Невозможно начать олимпиаду без заданий");
         }
 
-        ZonedDateTime startTime = ZonedDateTime.now(ZoneId.of("UTC+3")); // Текущее время
+        ZonedDateTime startTime = ZonedDateTime.now(ZoneId.of("UTC+3"));
         ZonedDateTime endTime = startTime.plus(parseToDuration(contest.getDuration()));
         contest.setStartTime(startTime);
         contest.setEndTime(endTime);
@@ -348,13 +348,14 @@ public class ContestService {
 
         if (addProblemRequest.getName() != null) {
             try {
-                String userDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + lastId.toString() + "/";
+                //String userDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + lastId.toString() + "/";
+                String userDir = "images/" + idInSession + "/";
                 Path path = Paths.get(userDir);
                 if (!Files.exists(path)) {
                     Files.createDirectories(path);
                 }
 
-                taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
+                taskService.handleAddProblemFile(addProblemRequest.getProblem().getInputStream(),
                         userDir,
                         addProblemRequest.getProblem().getOriginalFilename());
             } catch (IOException | RarException e) {

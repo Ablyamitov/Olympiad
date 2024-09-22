@@ -67,9 +67,11 @@ public class ControllerAdvice {
     @ExceptionHandler({AccessDeniedException.class, org.springframework.security.access.AccessDeniedException.class})
     public ResponseEntity<ErrorMessage> handleAccessDeniedException() {
         log.error("Access denied");
+      //  List<String> errors = new ArrayList<>(List.of("Доступ запрещён"));
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
                 .body(new ErrorMessage("Доступ запрещён"));
+       // return ResponseUtil.createResponse(null, false, errors);
     }
 
     @ExceptionHandler(IOException.class)
