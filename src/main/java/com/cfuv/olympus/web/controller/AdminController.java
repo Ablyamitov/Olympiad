@@ -37,6 +37,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -212,20 +213,23 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    @PostMapping("/addProblems")
+    @PostMapping(value = "/addProblems", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
     public ResponseEntity<List<Tasks>> addProblems(
             @Parameter(description = "Сессия", example = "1") @RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
             @Parameter(description = "Имя html", example = "Сортировка.html") @RequestParam(value = "htmlName", required = false) String htmlName,
             @Parameter(description = "Содержимое html", example = "<!DOCTYPE html>") @RequestParam(value = "htmlContent") String htmlContent,
             @Parameter(description = "Название zip файла", example = "Work1.zip") @RequestParam(value = "name", required = false) String name,
-            @Parameter(description = "Zip файл") @RequestParam(value = "problem", required = false) MultipartFile file,
+            @Parameter(description = "Zip файл с заданием") @RequestParam(value = "problem", required = false) MultipartFile file,
+            @Parameter(description = "Zip файл с картинками") @RequestParam(value = "images", required = false) MultipartFile images,
             @Parameter(description = "Макс. кол-во очков", example = "20") @RequestParam("points") @Min(value = 0, message = "Session must be at least 0") int points
+
     ) throws IOException {
         AddProblemRequest addProblemRequest = new AddProblemRequest();
         addProblemRequest.setSession(session);
         addProblemRequest.setHtmlContent(htmlContent);
         addProblemRequest.setName(name);
         addProblemRequest.setProblem(file);
+        addProblemRequest.setImages(images);
         addProblemRequest.setPoints(points);
         addProblemRequest.setHtmlName(htmlName);
         return ResponseEntity.ok(contestService

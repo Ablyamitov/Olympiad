@@ -28,16 +28,22 @@ import java.nio.file.Paths;
 public class ImageController {
     private final Path imageLocation = Paths.get("images");
 
-    @Operation(summary = "Get image", description = "Return file resource")
-    @GetMapping("/{folder}/{filename:.+}")
+    @Operation(summary = "Get image", description = """
+            Return file resource.
+            To get the photo you must specify following path: /images/{session}/{taskIdInSession}/{image}.
+            Example: /images/22/1/image.png.""")
+    @GetMapping("/{session}/{idInSession}/{filename:.+}")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
             @ApiResponse(responseCode = "404", description = "Not found - Image not found",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    public ResponseEntity<Resource> serveFile(@PathVariable String folder, @PathVariable String filename) {
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename, @PathVariable String idInSession, @PathVariable String session) {
         try {
-            Path file = imageLocation.resolve(folder).resolve(filename);
+            Path file = imageLocation.
+                    resolve(session).
+                    resolve(idInSession).
+                    resolve(filename);
             Resource resource = new UrlResource(file.toUri());
 
             if (resource.exists() || resource.isReadable()) {

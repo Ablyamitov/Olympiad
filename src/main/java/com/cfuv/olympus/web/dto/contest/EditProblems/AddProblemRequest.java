@@ -21,6 +21,8 @@ public class AddProblemRequest {
 
     private MultipartFile problem;
 
+    private MultipartFile images;
+
     @Min(value = 0, message = "Количество очков должно быть не меньше 0")
     private int points;
 }

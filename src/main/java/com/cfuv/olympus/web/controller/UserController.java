@@ -28,6 +28,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -85,7 +86,7 @@ public class UserController {
             @ApiResponse(responseCode = "422", description = "IOException - Failed to upload file",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    @PostMapping("/contest/uploadFile")
+    @PostMapping(value = "/contest/uploadFile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<JudgeTableResponse>> uploadFile(@Parameter(description = "Сессия") @RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
                                                                @Parameter(description = "id участника") @RequestParam("userId") @Min(value = 0, message = "userId must be at least 0") Long userId,
                                                                @Parameter(description = "Номер задания") @RequestParam("taskNumber") @Min(value = 0, message = "taskNumber must be at least 0") Long taskNumber,

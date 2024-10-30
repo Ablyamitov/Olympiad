@@ -59,7 +59,7 @@ public class TaskService {
 
     }
 
-    public void handleAddProblemFile(InputStream fileStream, String photoDir, String tasksDir, String fileName) throws IOException, RarException {
+    public void handleAddProblemFile(InputStream fileStream, String photoDir, String fileName) throws IOException, RarException {
 
         Path tempPath = Files.createTempFile("temp", ".zip");
         Files.copy(fileStream, tempPath, StandardCopyOption.REPLACE_EXISTING);
@@ -72,7 +72,8 @@ public class TaskService {
                 if (isPhoto(entry.getName())) {
                     filePath = Paths.get(photoDir, entry.getName());
                 } else {
-                    filePath = Paths.get(tasksDir, entry.getName());
+                    //filePath = Paths.get(tasksDir, entry.getName());
+                    throw new IOException(String.format("Expected file type png or jpg, received - %s", entry.getName()));
                 }
 
                 if (entry.isDirectory()) {

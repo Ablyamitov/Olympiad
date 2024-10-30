@@ -344,10 +344,10 @@ public class ContestService {
                 .map(Tasks::getId)
                 .orElse(null);
 
-        if (addProblemRequest.getName() != null) {
+        if (addProblemRequest.getName() != null && !addProblemRequest.getImages().isEmpty()) {
             try {
                 //String userDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + lastId.toString() + "/";
-                String photoDir = "images/" + idInSession + "/";
+                String photoDir = "images/" + addProblemRequest.getSession() + "/" + idInSession + "/";
                 String tasksDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + idInSession + "/";
                 Path photoPath = Paths.get(photoDir);
                 Path tasksPath = Paths.get(tasksDir);
@@ -358,10 +358,16 @@ public class ContestService {
                     Files.createDirectories(tasksPath);
                 }
 
-                taskService.handleAddProblemFile(addProblemRequest.getProblem().getInputStream(),
-                        photoDir,
+//                taskService.handleAddProblemFile(addProblemRequest.getProblem().getInputStream(),
+//                        photoDir,
+//                        //tasksDir,
+//                        addProblemRequest.getProblem().getOriginalFilename());
+                taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
                         tasksDir,
                         addProblemRequest.getProblem().getOriginalFilename());
+                taskService.handleAddProblemFile(addProblemRequest.getImages().getInputStream(),
+                        photoDir,
+                        addProblemRequest.getImages().getOriginalFilename());
             } catch (IOException | RarException e) {
                 throw new IOException(e.getMessage());
             }
