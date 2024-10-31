@@ -52,11 +52,12 @@ public class CORSFilter implements Filter {
         String origin = request.getHeader("Origin");
 
         // Проверка, разрешен ли origin
-        if (origin != null && allowedOrigins.contains(origin)) {
-            response.setHeader("Access-Control-Allow-Origin", origin);
-            response.setHeader("Access-Control-Allow-Credentials", "true");
-        }
+//        if (origin != null && allowedOrigins.contains(origin)) {
+//            response.setHeader("Access-Control-Allow-Origin", origin);
+//            response.setHeader("Access-Control-Allow-Credentials", "true");
+//        }
 
+        response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Headers", "Date, Content-Type, Accept, X-Requested-With, Authorization, From, X-Auth-Token, Request-Id, ngrok-skip-browser-warning");
         response.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
