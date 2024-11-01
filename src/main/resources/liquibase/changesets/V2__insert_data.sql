@@ -4,4 +4,4 @@ values ('Aboba', 'Admin','asd@gmail.com', '$2a$10$3jRAtonCE7HN4dZ1tkXCS.guptFexN
 
 
 insert into users_roles (user_id, role)
-values (0,'ROLE_ADMIN');
+values (1,'ROLE_ADMIN');
