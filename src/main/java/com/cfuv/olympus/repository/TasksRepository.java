@@ -13,6 +13,8 @@ public interface TasksRepository extends JpaRepository<Tasks, Long> {
 
     Optional<Tasks> findByIdAndSession(Long id, Long session);
 
+    Optional<Tasks> findByTaskId(Long taskId);
+
     LinkedList<Tasks> findAllBySession(Long session);
 
     Long countBySession(Long session);

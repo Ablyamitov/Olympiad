@@ -20,6 +20,8 @@ public class JudgeTableResponse {
 
     private Integer points;
 
+    private Integer maxPoints;
+
     private String comment;
 
     private String sentTime;

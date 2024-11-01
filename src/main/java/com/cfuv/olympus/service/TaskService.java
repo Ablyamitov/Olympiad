@@ -1,5 +1,6 @@
 package com.cfuv.olympus.service;
 
+import com.cfuv.olympus.domain.contest.Tasks;
 import com.cfuv.olympus.domain.contest.UserTasks;
 import com.cfuv.olympus.repository.UserTasksRepository;
 import com.cfuv.olympus.domain.contest.UserTaskState;
@@ -14,6 +15,7 @@ import com.cfuv.olympus.web.dto.contest.ResultTable.UserAnswers;
 import com.cfuv.olympus.web.dto.contest.ResultTable.Users;
 import com.cfuv.olympus.web.dto.task.Download.DownloadTaskRequest;
 import com.github.junrar.exception.RarException;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -159,6 +161,9 @@ public class TaskService {
         jtr.setSentTime(ut.getSentTime());
         jtr.setFileName(ut.getFileName());
         jtr.setState(ut.getState().name());
+        Tasks tasks = tasksRepository.findByTaskId(jtr.getTaskNumber())
+                .orElseThrow(()-> new EntityNotFoundException("Задание не найдено"));
+        jtr.setMaxPoints(tasks.getPoints());
         return jtr;
     }
 
