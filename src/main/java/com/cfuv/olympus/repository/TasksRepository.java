@@ -11,6 +11,8 @@ public interface TasksRepository extends JpaRepository<Tasks, Long> {
 
     void deleteByIdAndSession(Long id, Long session);
 
+    Optional<Tasks> findByIdAndSession(Long id, Long session);
+
     LinkedList<Tasks> findAllBySession(Long session);
 
     Long countBySession(Long session);

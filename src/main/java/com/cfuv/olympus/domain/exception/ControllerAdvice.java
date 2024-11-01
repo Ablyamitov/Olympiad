@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -118,6 +119,14 @@ public class ControllerAdvice {
         log.error(exception.getMessage(), exception);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorMessage(exception.getMessage()));
+    }
+
+    @ExceptionHandler(UncheckedIOException.class)
+    public ResponseEntity<ErrorMessage> handleUncheckedIOException(UncheckedIOException exception) {
+        log.error("Ошибка при работе с файловой системой: {}", exception.getMessage(), exception);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorMessage(exception.getMessage()));
     }
 

@@ -41,6 +41,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,6 +51,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -340,38 +342,64 @@ public class ContestService {
         tasksRepository.save(task);
 
 //        Long lastId = tasksRepository.findMaxIdBySession(addProblemRequest.getSession());
-        Long lastId = tasksRepository.findFirstBySessionOrderByIdDesc(addProblemRequest.getSession())
-                .map(Tasks::getId)
-                .orElse(null);
+//        Long lastId = tasksRepository.findFirstBySessionOrderByIdDesc(addProblemRequest.getSession())
+//                .map(Tasks::getId)
+//                .orElse(null);
 
-        if (addProblemRequest.getName() != null && !addProblemRequest.getImages().isEmpty()) {
+        if (addProblemRequest.getProblem() != null && !addProblemRequest.getProblem().isEmpty()){
             try {
-                //String userDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + lastId.toString() + "/";
+            String tasksDir = UPLOAD_DIR + "tasks" + "/" + addProblemRequest.getSession().toString() + "/" + idInSession + "/";
+            Path tasksPath = Paths.get(tasksDir);
+            if (!Files.exists(tasksPath)) {
+                Files.createDirectories(tasksPath);
+            }
+            taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
+                    tasksDir,
+                    addProblemRequest.getProblem().getOriginalFilename());
+            } catch (IOException | RarException e) {
+                throw new IOException(e.getMessage());
+            }
+        }
+        if (addProblemRequest.getImages() != null && !addProblemRequest.getImages().isEmpty()) {
+            try {
                 String photoDir = "images/" + addProblemRequest.getSession() + "/" + idInSession + "/";
-                String tasksDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + idInSession + "/";
                 Path photoPath = Paths.get(photoDir);
-                Path tasksPath = Paths.get(tasksDir);
                 if (!Files.exists(photoPath)) {
                     Files.createDirectories(photoPath);
                 }
-                if (!Files.exists(tasksPath)) {
-                    Files.createDirectories(tasksPath);
-                }
-
-//                taskService.handleAddProblemFile(addProblemRequest.getProblem().getInputStream(),
-//                        photoDir,
-//                        //tasksDir,
-//                        addProblemRequest.getProblem().getOriginalFilename());
-                taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
-                        tasksDir,
-                        addProblemRequest.getProblem().getOriginalFilename());
                 taskService.handleAddProblemFile(addProblemRequest.getImages().getInputStream(),
                         photoDir,
                         addProblemRequest.getImages().getOriginalFilename());
             } catch (IOException | RarException e) {
                 throw new IOException(e.getMessage());
             }
+
         }
+
+//        if (addProblemRequest.getName() != null && addProblemRequest.getImages() != null) {
+//            try {
+//                //String userDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + lastId.toString() + "/";
+//                String photoDir = "images/" + addProblemRequest.getSession() + "/" + idInSession + "/";
+//                String tasksDir = UPLOAD_DIR + "tasks" + "/" + task.getSession().toString() + "/" + idInSession + "/";
+//                Path photoPath = Paths.get(photoDir);
+//                Path tasksPath = Paths.get(tasksDir);
+//                if (!Files.exists(photoPath)) {
+//                    Files.createDirectories(photoPath);
+//                }
+//                if (!Files.exists(tasksPath)) {
+//                    Files.createDirectories(tasksPath);
+//                }
+//
+//                taskService.handleFile(addProblemRequest.getProblem().getInputStream(),
+//                        tasksDir,
+//                        addProblemRequest.getProblem().getOriginalFilename());
+//                taskService.handleAddProblemFile(addProblemRequest.getImages().getInputStream(),
+//                        photoDir,
+//                        addProblemRequest.getImages().getOriginalFilename());
+//            } catch (IOException | RarException e) {
+//                throw new IOException(e.getMessage());
+//            }
+//        }
 
         List<Tasks> problems = tasksRepository.findAllBySession(contest.getSession());
         contest.setTasks(problems);
@@ -383,8 +411,45 @@ public class ContestService {
 
     @Transactional
     public LinkedList<Tasks> deleteProblem(DeleteProblemRequest deleteProblemRequest) {
-        tasksRepository.deleteByIdAndSession(deleteProblemRequest.getId(), deleteProblemRequest.getSession());
+//        tasksRepository.deleteByIdAndSession(deleteProblemRequest.getId(), deleteProblemRequest.getSession());
+//        return tasksRepository.findAllBySession(deleteProblemRequest.getSession());
+
+        // Находим задание по ID и получаем его IDinSession
+        Tasks task = tasksRepository.findByIdAndSession(deleteProblemRequest.getId(), deleteProblemRequest.getSession())
+                .orElseThrow(() -> new IllegalStateException("Задание не найдено"));
+
+        Long idInSession = task.getTaskId(); // Предполагаем, что IDinSession хранится в поле taskId
+
+        // Удаляем задание из базы данных
+        tasksRepository.delete(task);
+
+        // Определяем пути для удаления файлов
+        String tasksDir = UPLOAD_DIR + "tasks/" + deleteProblemRequest.getSession() + "/" + idInSession + "/";
+        String imagesDir = "images/" + deleteProblemRequest.getSession() + "/" + idInSession + "/";
+
+        // Удаляем связанные файлы, если директории существуют
+        try {
+            deleteDirectory(Paths.get(tasksDir));
+            deleteDirectory(Paths.get(imagesDir));
+        } catch (IOException e) {
+            throw new IllegalStateException("Ошибка при удалении файлов задания: " + e.getMessage(), e);
+        }
+
+        // Возвращаем обновленный список задач для этой сессии
         return tasksRepository.findAllBySession(deleteProblemRequest.getSession());
+    }
+    private void deleteDirectory(Path path) throws IOException {
+        if (Files.exists(path)) {
+            try (Stream<Path> walk = Files.walk(path).sorted(Comparator.reverseOrder())) {
+                walk.forEach(filePath -> {
+                    try {
+                        Files.delete(filePath);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException("Не удалось удалить файл или папку: " + filePath, e);
+                    }
+                });
+            }
+        }
     }
 
     public boolean isContestFinished(Long session) {
