@@ -59,6 +59,7 @@ public class ContestService {
     private final ContestRepository contestRepository;
     private final TasksRepository tasksRepository;
     private final TaskService taskService;
+    private final UserTaskService userTaskService;
 
     private final UserService userService;
     private final EmailService emailService;
@@ -238,10 +239,27 @@ public class ContestService {
     }
 
     @Transactional
-    public void deleteContest(Long contestSession) {
-        Contest contest = contestRepository.findBySession(contestSession)
+    public void deleteContest(Long session) {
+        Contest contest = contestRepository.findBySession(session)
                 .orElseThrow(() -> new IllegalStateException("Олимпиады не существует"));
         userService.deleteParticipantsAndJudges(contest);
+        userTaskService.deleteAllBySession(session);
+        taskService.deleteAllBySession(session);
+
+        // Определяем пути для удаления файлов
+        String tasksDir = UPLOAD_DIR + "tasks/" + session;
+        String userTasksDir = UPLOAD_DIR + "user-tasks/" + session;
+        String imagesDir = "images/" + session;
+
+        // Удаляем связанные файлы, если директории существуют
+        try {
+            deleteDirectory(Paths.get(tasksDir));
+            deleteDirectory(Paths.get(imagesDir));
+            deleteDirectory(Paths.get(userTasksDir));
+        } catch (IOException e) {
+            throw new IllegalStateException("Ошибка при удалении файлов: " + e.getMessage(), e);
+        }
+
         contestRepository.delete(contest);
     }
 

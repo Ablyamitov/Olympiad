@@ -24,5 +24,7 @@ public interface TasksRepository extends JpaRepository<Tasks, Long> {
 
     Optional<Tasks> findFirstBySessionOrderByIdDesc(Long session);
 
+    void deleteAllBySession(Long session);
+
 }
 

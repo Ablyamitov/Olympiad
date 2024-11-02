@@ -16,6 +16,7 @@ import com.cfuv.olympus.web.dto.contest.ResultTable.Users;
 import com.cfuv.olympus.web.dto.task.Download.DownloadTaskRequest;
 import com.github.junrar.exception.RarException;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -236,5 +237,11 @@ public class TaskService {
         resultTableResponse.setTasksCount(tasksCount);
 
         return resultTableResponse;
+    }
+
+
+    @Transactional
+    public void deleteAllBySession(Long session){
+        tasksRepository.deleteAllBySession(session);
     }
 }

@@ -88,26 +88,29 @@ public class UserTaskService {
                 .map(UserTasks::getId)
                 .orElse(null);
 
-        try {
-            String userDir = UPLOAD_DIR + "user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + lastId.toString() + "/";
-            Path path = Paths.get(userDir);
-            if (!Files.exists(path)) {
-                Files.createDirectories(path);
+        if (uploadFileRequest.getFile() != null) {
+            try {
+                String userDir = UPLOAD_DIR + "user-tasks" + "/" + uploadFileRequest.getUserId().toString() + "/" + lastId.toString() + "/";
+                Path path = Paths.get(userDir);
+                if (!Files.exists(path)) {
+                    Files.createDirectories(path);
+                }
+
+                taskService.handleFile(uploadFileRequest.getFile().getInputStream(),
+                        userDir,
+                        uploadFileRequest.getFile().getOriginalFilename());
+            } catch (IOException | RarException e) {
+                throw new IOException(e.getMessage());
             }
-
-            taskService.handleFile(uploadFileRequest.getFile().getInputStream(),
-                    userDir,
-                    uploadFileRequest.getFile().getOriginalFilename());
-        } catch (IOException | RarException e) {
-            throw new IOException(e.getMessage());
         }
-
         return getTableResponses(uploadFileRequest.getUserId(), userTask.getTaskNumber());
     }
 
     public List<JudgeTableResponse> getAllTasksByUserIdAndTaskNumber(GetAllTasksRequest getAllTasksRequest) {
         return getTableResponses(getAllTasksRequest.getUserId(), getAllTasksRequest.getTaskNumber());
     }
+
+
 
     private List<JudgeTableResponse> getTableResponses(Long userId, Long taskNumber) {
         List<UserTasks> userTasks = userTasksRepository
@@ -145,9 +148,15 @@ public class UserTaskService {
         return taskService.mapToJudgeTableResponse(ut);
     }
 
+
     public Long getSessionByUserTasksId(Long userTasksId) {
         UserTasks userTask = userTasksRepository.findById(userTasksId)
                 .orElseThrow(() -> new EntityNotFoundException("Ответ участника не найден"));
         return userTask.getSession();
+    }
+
+    @Transactional
+    public void deleteAllBySession(Long session){
+        userTasksRepository.deleteAllBySession(session);
     }
 }

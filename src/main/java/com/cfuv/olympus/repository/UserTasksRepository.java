@@ -24,4 +24,7 @@ public interface UserTasksRepository extends JpaRepository<UserTasks,Long> {
 
     Optional<UserTasks> findFirstBySessionOrderByIdDesc(Long session);
 
+
+    void deleteAllBySession(Long session);
+
 }
