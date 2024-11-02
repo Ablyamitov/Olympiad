@@ -114,8 +114,12 @@ public class TaskService {
 
 
     public ResponseEntity<Resource> downloadFile(DownloadTaskRequest downloadTaskRequest) throws Exception {
-        Path file = Paths.get("uploads", "tasks", downloadTaskRequest.getSession().toString(), downloadTaskRequest.getTaskId().toString(), downloadTaskRequest.getFileName());
-        return getResourceResponseEntity(file);
+
+        if (tasksRepository.existsByTaskIdAndSession(downloadTaskRequest.getTaskId(), downloadTaskRequest.getSession())) {
+            Path file = Paths.get("uploads", "tasks", downloadTaskRequest.getSession().toString(), downloadTaskRequest.getTaskId().toString(), downloadTaskRequest.getFileName());
+            return getResourceResponseEntity(file);
+        }
+        throw new EntityNotFoundException("Задания нету");
     }
 
     ResponseEntity<Resource> getResourceResponseEntity(Path file) throws IOException {
