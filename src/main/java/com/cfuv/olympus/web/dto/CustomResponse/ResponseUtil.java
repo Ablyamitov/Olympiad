@@ -9,4 +9,5 @@ public class ResponseUtil {
         CustomResponse<T> response = new CustomResponse<>(data, status, errors);
         return ResponseEntity.ok(response);
     }
+
 }

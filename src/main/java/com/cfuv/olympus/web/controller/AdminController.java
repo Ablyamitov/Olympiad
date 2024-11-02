@@ -5,6 +5,7 @@ import com.cfuv.olympus.domain.contest.Tasks;
 import com.cfuv.olympus.service.ContestService;
 import com.cfuv.olympus.service.TaskService;
 import com.cfuv.olympus.service.UserTaskService;
+import com.cfuv.olympus.web.dto.CustomPutResponse;
 import com.cfuv.olympus.web.dto.CustomResponse.CustomResponse;
 import com.cfuv.olympus.web.dto.CustomResponse.ResponseUtil;
 import com.cfuv.olympus.web.dto.contest.ChangeDuration.ChangeDurationRequest;
@@ -216,12 +217,18 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    @PostMapping("/changeName/{session}")
-    public ResponseEntity<String> changeName(@PathVariable final Long session,
-            @Valid @RequestBody final ChangeNameRequest changeNameRequest) {
-        return ResponseEntity.ok(contestService
+    @PutMapping("/changeName/{session}")
+    public ResponseEntity<CustomResponse<CustomPutResponse>> changeName(@PathVariable final Long session,
+                                                                        @Valid @RequestBody final ChangeNameRequest changeNameRequest) {
+            CustomPutResponse response = new CustomPutResponse();
+            response.setStatus(contestService
                 .changeName(session,changeNameRequest.getName()));
+            if (response.getStatus() == null) response.setStatus(false);
+        return ResponseUtil.createResponse(response, true, null);
     }
+
+
+
 
     @Operation(summary = "Add problems", description = "Add problems to the contest")
     @ApiResponses(value = {

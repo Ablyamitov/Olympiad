@@ -332,7 +332,7 @@ public class ContestService {
     }
 
     @Transactional
-    public String changeName(Long session, String name) {
+    public Boolean changeName(Long session, String name) {
         Contest contest = contestRepository.findBySession(session)
                 .orElseThrow(() -> new IllegalStateException("Олимпиады не существует"));
         if (contest.getState() == ContestState.IN_PROGRESS) {
@@ -340,7 +340,7 @@ public class ContestService {
         }
         contest.setName(name);
         contestRepository.save(contest);
-        return contest.getName();
+        return true;
     }
 
     @Transactional

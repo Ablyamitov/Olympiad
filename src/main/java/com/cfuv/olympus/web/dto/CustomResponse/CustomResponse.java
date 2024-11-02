@@ -15,4 +15,5 @@ public class CustomResponse<T> {
         this.status = status;
         this.errors = errors;
     }
+
 }
