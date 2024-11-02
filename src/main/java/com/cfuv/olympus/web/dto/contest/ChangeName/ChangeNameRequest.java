@@ -8,9 +8,6 @@ import lombok.Data;
 
 @Data
 public class ChangeNameRequest {
-    @Min(value = 0, message = "Сессия должна быть не меньше 0")
-    @Schema(description = "Сессия")
-    private Long session;
     @NotBlank(message = "Новое имя не должно быть пустым")
     @Schema(description = "Новое имя олимпиады", example = "Web 2025")
     private String name;

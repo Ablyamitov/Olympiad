@@ -332,13 +332,13 @@ public class ContestService {
     }
 
     @Transactional
-    public String changeName(ChangeNameRequest changeNameRequest) {
-        Contest contest = contestRepository.findBySession(changeNameRequest.getSession())
+    public String changeName(Long session, String name) {
+        Contest contest = contestRepository.findBySession(session)
                 .orElseThrow(() -> new IllegalStateException("Олимпиады не существует"));
         if (contest.getState() == ContestState.IN_PROGRESS) {
             throw new ContestStartedYetException("Олимпиада уже начата");
         }
-        contest.setName(changeNameRequest.getName());
+        contest.setName(name);
         contestRepository.save(contest);
         return contest.getName();
     }

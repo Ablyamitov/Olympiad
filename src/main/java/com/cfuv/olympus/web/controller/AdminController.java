@@ -192,7 +192,22 @@ public class AdminController {
                 .changeDuration(changeDurationRequest));
     }
 
-    @Operation(summary = "Change name", description = "Change contest name")
+//    @Operation(summary = "Change name", description = "Change contest name")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+//            @ApiResponse(responseCode = "400", description = "ContestStartedYetException - contest started yet",
+//                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+//            ,
+//            @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
+//                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+//    })
+//    @PostMapping("/changeName")
+//    public ResponseEntity<String> changeName(@Valid @RequestBody final ChangeNameRequest changeNameRequest) {
+//        return ResponseEntity.ok(contestService
+//                .changeName(changeNameRequest));
+//    }
+
+        @Operation(summary = "Change name", description = "Change contest name")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
             @ApiResponse(responseCode = "400", description = "ContestStartedYetException - contest started yet",
@@ -201,10 +216,11 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    @PostMapping("/changeName")
-    public ResponseEntity<String> changeName(@Valid @RequestBody final ChangeNameRequest changeNameRequest) {
+    @PostMapping("/changeName/{session}")
+    public ResponseEntity<String> changeName(@PathVariable final Long session,
+            @Valid @RequestBody final ChangeNameRequest changeNameRequest) {
         return ResponseEntity.ok(contestService
-                .changeName(changeNameRequest));
+                .changeName(session,changeNameRequest.getName()));
     }
 
     @Operation(summary = "Add problems", description = "Add problems to the contest")
