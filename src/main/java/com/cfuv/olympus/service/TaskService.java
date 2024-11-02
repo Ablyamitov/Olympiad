@@ -22,6 +22,8 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.tika.Tika;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -51,6 +53,8 @@ public class TaskService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final TasksRepository tasksRepository;
+
+    public static final Logger log = LoggerFactory.getLogger(TaskService.class);
 
     public void handleFile(InputStream fileStream, String destDir, String fileName) throws IOException, RarException {
 
@@ -114,7 +118,9 @@ public class TaskService {
 
 
     public ResponseEntity<Resource> downloadFile(DownloadTaskRequest downloadTaskRequest) throws Exception {
-
+        log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Session, сессия = "+downloadTaskRequest.getSession());
+        log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TaskId, Номер задания = "+downloadTaskRequest.getTaskId());
+        log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!FileName, Имя файла = "+downloadTaskRequest.getFileName());
         if (tasksRepository.existsByTaskIdAndSession(downloadTaskRequest.getTaskId(), downloadTaskRequest.getSession())) {
             Path file = Paths.get("uploads", "tasks", downloadTaskRequest.getSession().toString(), downloadTaskRequest.getTaskId().toString(), downloadTaskRequest.getFileName());
             return getResourceResponseEntity(file);
