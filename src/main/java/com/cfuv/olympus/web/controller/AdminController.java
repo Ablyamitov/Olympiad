@@ -266,8 +266,9 @@ public class AdminController {
             @ApiResponse(responseCode = "404", description = "Not found - File not found",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    @PostMapping("/download")
+    @PostMapping(value = "/download", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadTaskRequest downloadTaskRequest) throws Exception {
+
         return taskService.downloadFile(downloadTaskRequest);
     }
 
