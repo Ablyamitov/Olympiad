@@ -92,7 +92,7 @@ public class ApplicationConfig {
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/images/**").permitAll()
                 //.requestMatchers("/images/**").hasAnyRole("ADMIN", "JUDGE", "PARTICIPANT")
-                .requestMatchers("/images/**").authenticated()
+                //.requestMatchers("/images/**").authenticated()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/judge/**").hasRole("JUDGE")
                 .requestMatchers("/api/v1/users/**").hasRole("PARTICIPANT")
