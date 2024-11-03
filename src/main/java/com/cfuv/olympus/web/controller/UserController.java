@@ -126,7 +126,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Not found - File not found",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    @PostMapping("/download")
+    @PostMapping(value = "/download", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource> downloadUserTask(@Valid @RequestBody final DownloadUserTaskRequest downloadRequest) throws Exception {
         return userTaskService.downloadFile(downloadRequest);
     }
@@ -139,7 +139,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Not found - File not found",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    @PostMapping("/download-task")
+    @PostMapping(value = "/download-task", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource> downloadTask(@Valid @RequestBody final DownloadTaskRequest downloadTaskRequest) throws Exception {
         return taskService.downloadFile(downloadTaskRequest);
     }

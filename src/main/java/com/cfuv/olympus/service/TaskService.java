@@ -118,9 +118,6 @@ public class TaskService {
 
 
     public ResponseEntity<Resource> downloadFile(DownloadTaskRequest downloadTaskRequest) throws Exception {
-        log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Session, сессия = "+downloadTaskRequest.getSession());
-        log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!TaskId, Номер задания = "+downloadTaskRequest.getTaskId());
-        log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!FileName, Имя файла = "+downloadTaskRequest.getFileName());
         if (tasksRepository.existsByTaskIdAndSession(downloadTaskRequest.getTaskId(), downloadTaskRequest.getSession())) {
             Path file = Paths.get("uploads", "tasks", downloadTaskRequest.getSession().toString(), downloadTaskRequest.getTaskId().toString(), downloadTaskRequest.getFileName());
             return getResourceResponseEntity(file);

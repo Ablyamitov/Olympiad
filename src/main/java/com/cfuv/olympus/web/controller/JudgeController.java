@@ -20,6 +20,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.api.ErrorMessage;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -73,7 +74,7 @@ public class JudgeController {
             @ApiResponse(responseCode = "404", description = "Not found - File not found",
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
-    @PostMapping("/download")
+    @PostMapping(value = "/download", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Resource> download(@Valid @RequestBody final DownloadUserTaskRequest downloadRequest) throws Exception {
         return userTaskService.downloadFile(downloadRequest);
     }
