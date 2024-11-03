@@ -169,7 +169,7 @@ public class TaskService {
         jtr.setSentTime(ut.getSentTime());
         jtr.setFileName(ut.getFileName());
         jtr.setState(ut.getState().name());
-        Tasks tasks = tasksRepository.findByTaskId(jtr.getTaskNumber())
+        Tasks tasks = tasksRepository.findByTaskIdAndSession(jtr.getTaskNumber(), jtr.getSession())
                 .orElseThrow(()-> new EntityNotFoundException("Задание не найдено"));
         jtr.setMaxPoints(tasks.getPoints());
         return jtr;

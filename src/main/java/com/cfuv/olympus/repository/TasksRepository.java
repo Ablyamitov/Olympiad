@@ -9,21 +9,14 @@ import java.util.Optional;
 
 public interface TasksRepository extends JpaRepository<Tasks, Long> {
 
-
-    void deleteByIdAndSession(Long id, Long session);
-
     Optional<Tasks> findByIdAndSession(Long id, Long session);
 
-    Optional<Tasks> findByTaskId(Long taskId);
+    Optional<Tasks> findByTaskIdAndSession(Long taskId, Long session);
 
     LinkedList<Tasks> findAllBySession(Long session);
 
     Long countBySession(Long session);
 
-    Long findMaxIdBySession(Long session);
-
-
-    Optional<Tasks> findFirstBySessionOrderByIdDesc(Long session);
 
     void deleteAllBySession(Long session);
 
