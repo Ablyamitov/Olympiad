@@ -41,7 +41,7 @@ public class JudgeController {
 
 
 
-    @CheckContestState
+    //@CheckContestState
     @Operation(summary = "Get contest by session", description = "Return contest by session")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -55,7 +55,7 @@ public class JudgeController {
     }
 
     //Judge
-    @CheckContestState
+    //@CheckContestState
     @Operation(summary = "Get contest user tasks table", description = "Returns a contest user tasks table for judge")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
@@ -67,7 +67,7 @@ public class JudgeController {
     }
 
 
-    @CheckContestState
+    //@CheckContestState
     @Operation(summary = "Get user tasks file content", description = "Returns a file content user tasks for judge from localstorage")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -80,7 +80,7 @@ public class JudgeController {
     }
 
 
-    @CheckContestState
+    //@CheckContestState
     @Operation(summary = "Send feedback", description = "Send feedback from judge to participant problem")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),

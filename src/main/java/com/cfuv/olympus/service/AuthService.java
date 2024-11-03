@@ -8,6 +8,7 @@ import com.cfuv.olympus.web.dto.auth.JwtResponse;
 import com.cfuv.olympus.web.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ContestService contestService;
 
     public JwtResponse login(final JwtRequest loginRequest) {
 
@@ -31,6 +33,13 @@ public class AuthService {
                         loginRequest.getUsername(), loginRequest.getPassword())
         );
         User user = userService.getByUsername(loginRequest.getUsername());
+
+        if (user.hasRole(Role.ROLE_PARTICIPANT)) {
+            if (user.getSession() != null && contestService.isContestFinished(user.getSession())) {
+                throw new AccessDeniedException("Доступ запрещён: Олимпиада уже завершена.");
+            }
+        }
+
         mapToJwtResponse(jwtResponse, user);
 
 
@@ -81,6 +90,9 @@ public class AuthService {
         }
         return jwtResponse;
     }
+
+
+
 
 
 }
