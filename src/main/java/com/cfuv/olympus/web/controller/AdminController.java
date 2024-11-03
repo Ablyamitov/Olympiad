@@ -5,6 +5,7 @@ import com.cfuv.olympus.domain.contest.Tasks;
 import com.cfuv.olympus.service.ContestService;
 import com.cfuv.olympus.service.TaskService;
 import com.cfuv.olympus.service.UserTaskService;
+import com.cfuv.olympus.service.contest.checker.aspect.CheckContestState;
 import com.cfuv.olympus.web.dto.CustomPutResponse;
 import com.cfuv.olympus.web.dto.CustomResponse.CustomResponse;
 import com.cfuv.olympus.web.dto.CustomResponse.ResponseUtil;
@@ -85,7 +86,7 @@ public class AdminController {
     }
 
 
-
+    @CheckContestState
     @Operation(summary = "Create users for contest", description = "Return created users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -166,6 +167,7 @@ public class AdminController {
     }
 
 
+    @CheckContestState
     @Operation(summary = "Start contest", description = "Return contest start and end time")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -178,6 +180,7 @@ public class AdminController {
                 .start(getStartAndEndContestTimeRequest.getSession()));
     }
 
+    @CheckContestState
     @Operation(summary = "Change duration", description = "Change contest duration")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -208,6 +211,7 @@ public class AdminController {
 //                .changeName(changeNameRequest));
 //    }
 
+    @CheckContestState
         @Operation(summary = "Change name", description = "Change contest name")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
@@ -230,6 +234,7 @@ public class AdminController {
 
 
 
+    @CheckContestState
     @Operation(summary = "Add problems", description = "Add problems to the contest")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved"),

@@ -1,6 +1,8 @@
 package com.cfuv.olympus.service.contest.checker.aspect;
 
 import com.cfuv.olympus.service.ContestService;
+import com.cfuv.olympus.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeRequest;
+import com.cfuv.olympus.web.dto.contest.createUsers.CreateUsersRequest;
 import com.cfuv.olympus.web.dto.task.Download.DownloadUserTaskRequest;
 import com.cfuv.olympus.web.dto.task.feedback.FeedbackRequest;
 import com.cfuv.olympus.service.UserTaskService;
@@ -59,8 +61,15 @@ public class ContestStateAspect {
                     session = userTaskService.getSessionByUserTasksId(((FeedbackRequest) arg).getUserTasksId());
                 } else if (arg instanceof GetAllTasksRequest) {
                     session = ((GetAllTasksRequest) arg).getSession();
+                } else if (arg instanceof CreateUsersRequest) {
+                    session = ((CreateUsersRequest) arg).getSession();
+
+                } else if (arg instanceof GetStartAndEndContestTimeRequest) {
+                    session = ((GetStartAndEndContestTimeRequest) arg).getSession();
                 } else if (arg instanceof DownloadTaskRequest) {
                     session = ((DownloadTaskRequest) arg).getSession();
+
+
                 } else if (arg instanceof Long) {
                     session = (Long) arg;
                 }
