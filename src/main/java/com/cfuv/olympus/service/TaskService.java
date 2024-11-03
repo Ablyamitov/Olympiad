@@ -166,11 +166,20 @@ public class TaskService {
         jtr.setComment(ut.getComment());
         jtr.setSentTime(ut.getSentTime());
         jtr.setFileName(ut.getFileName());
-        jtr.setState(ut.getState().name());
+        jtr.setState(getLocalizedState(ut.getState()));
+
         Tasks tasks = tasksRepository.findByTaskIdAndSession(jtr.getTaskNumber(), jtr.getSession())
                 .orElseThrow(()-> new EntityNotFoundException("Задание не найдено"));
         jtr.setMaxPoints(tasks.getPoints());
         return jtr;
+    }
+
+    private String getLocalizedState(UserTaskState state) {
+        return switch (state) {
+            case NOT_EVALUATED -> "Не оценено";
+            case REJECTED -> "Отклонено";
+            case ACCEPTED -> "Принято";
+        };
     }
 
 //    public ResultTableResponse getResultTableResponse(Long session) {
