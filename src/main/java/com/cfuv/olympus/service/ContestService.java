@@ -260,6 +260,7 @@ public class ContestService {
             throw new IllegalStateException("Ошибка при удалении файлов: " + e.getMessage(), e);
         }
 
+
         contestRepository.delete(contest);
     }
 
