@@ -57,7 +57,8 @@ public class CORSFilter implements Filter {
 //            response.setHeader("Access-Control-Allow-Credentials", "true");
 //        }
         response.setHeader("Access-Control-Allow-Credentials", "true");
-        response.setHeader("Access-Control-Allow-Origin", "*");
+        //response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Access-Control-Allow-Origin", "https://web.kimcfuv.ru");
         response.setHeader("Access-Control-Allow-Headers", "Date, Content-Type, Accept, X-Requested-With, Authorization, From, X-Auth-Token, Request-Id, ngrok-skip-browser-warning");
         response.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
