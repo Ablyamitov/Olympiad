@@ -1,8 +1,11 @@
 package com.cfuv.olympus.web.security;
 
+import com.cfuv.olympus.domain.exception.ControllerAdvice;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,6 +41,7 @@ import java.util.Objects;
 //}
 
 public class CORSFilter implements Filter {
+    public static final Logger log = LoggerFactory.getLogger(CORSFilter.class);
     private final List<String> allowedOrigins = Arrays.asList(
             "http://localhost:3000",
             "https://siqalexx.github.io",
@@ -46,6 +50,7 @@ public class CORSFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        log.info("STARTING FILTER________________");
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
 
@@ -57,19 +62,21 @@ public class CORSFilter implements Filter {
 //            response.setHeader("Access-Control-Allow-Credentials", "true");
 //        }
         response.setHeader("Access-Control-Allow-Credentials", "true");
+        log.info("ALLOW CREDENTIALS________________");
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Headers", "Date, Content-Type, Accept, X-Requested-With, Authorization, From, X-Auth-Token, Request-Id, ngrok-skip-browser-warning");
         response.setHeader("Access-Control-Expose-Headers", "Set-Cookie");
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "3600");
-
+        log.info("ALLOW HEADERS________________");
         // Обработка preflight-запросов (OPTIONS)
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
             return;
         }
-
+        log.info("ALLOW OPTIONS________________");
         chain.doFilter(req, res);
+        log.info("ALLOW DO FILTER________________");
     }
 
     @Override
