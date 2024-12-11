@@ -95,6 +95,7 @@ public class ApplicationConfig {
                 //.requestMatchers("/images/**").authenticated()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/judge/**").hasRole("JUDGE")
+                .requestMatchers("/api/v1/judge/feedback").hasAnyRole("JUDGE", "ADMIN")
                 .requestMatchers("/api/v1/users/**").hasRole("PARTICIPANT")
 
                 .anyRequest().authenticated()
