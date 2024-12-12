@@ -183,7 +183,8 @@ public class TaskService {
         };
     }
 
-
+//
+//
 //    public ResultTableResponse getResultTableResponse(Long session) {
 //        ResultTableResponse resultTableResponse = new ResultTableResponse();
 //        List<User> fullUsers = userRepository.findAllBySession(session);
@@ -194,51 +195,54 @@ public class TaskService {
 //            if (u.getRoles().contains(Role.ROLE_JUDGE) || u.getRoles().contains(Role.ROLE_ADMIN)) continue;
 //
 //            Users userInfo = new Users();
-//            userInfo.setName((u.getName() == null || u.getSurname() == null) ? "Аноним" : u.getName() + " " + u.getSurname());
+//            userInfo.setName(
+//                    (u.getName() == null || u.getSurname() == null) ? "Аноним" : u.getName() + " " + u.getSurname()
+//            );
 //            userInfo.setUsername(u.getUsername());
 //            userInfo.setEmail(u.getEmail());
 //
-//            List<UserTasks> userTasks = userTasksRepository.findAllLatestTasksBySessionAndUserId(u.getSession(), u.getId());
+//            List<UserTasks> userTasks = userTasksRepository.findAllLatestEvaluatedTasksBySessionAndUserId(
+//                    u.getSession(), u.getId()
+//            );
 //            Map<Long, UserTasks> taskMap = userTasks.stream()
-//                    .collect(Collectors.toMap(UserTasks::getTaskNumber, task -> task));
+//                    .collect(Collectors.toMap(UserTasks::getTaskNumber, Function.identity()));
 //
 //            List<UserAnswers> userAnswers = new ArrayList<>();
 //            int totalPoints = 0;
 //
-//            // Проверяем по количеству задач в сессии
-//            for (int taskNumber = 1; taskNumber <= tasksCount; taskNumber++) {
+//            for (long taskNumber = 1; taskNumber <= tasksCount; taskNumber++) {
 //                UserAnswers userAnswer = new UserAnswers();
-//                userAnswer.setTaskNumber((long) taskNumber);
+//                userAnswer.setTaskNumber(taskNumber);
 //
-//                UserTasks task = taskMap.get((long) taskNumber);
+//                UserTasks task = taskMap.get(taskNumber);
 //                if (task == null) {
 //                    userAnswer.setAnswerStatus(AnswerStatus.NOT_SENT.name());
-//                    userAnswer.setPoints(0);
-//                } else if (task.getState() == UserTaskState.NOT_EVALUATED) {
-//                    userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
 //                    userAnswer.setPoints(null);
 //                } else {
-//                    userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
-//                    userAnswer.setPoints(task.getPoints());
-//                    totalPoints += task.getPoints();
+//                    if (task.getState() == UserTaskState.ACCEPTED || task.getState() == UserTaskState.REJECTED) {
+//                        userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
+//                        userAnswer.setPoints(task.getPoints());
+//                        totalPoints += task.getPoints() != null ? task.getPoints() : 0;
+//                    } else {
+//                        userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
+//                        userAnswer.setPoints(null);
+//                    }
 //                }
-//
 //                userAnswers.add(userAnswer);
 //            }
 //
 //            userInfo.setUserAnswers(userAnswers);
 //            userInfo.setSolvedTasksCount(userTasks.size());
 //            userInfo.setTotalPoints(totalPoints);
-//
 //            users.add(userInfo);
 //        }
 //
-//        // Сортировка пользователей по набранным очкам
+//        // Сортировка по очкам
 //        users.sort(Comparator.comparingInt(Users::getTotalPoints).reversed());
 //
-//        // Расстановка мест
 //        int currentPlace = 0;
 //        int previousTotalPoints = Integer.MAX_VALUE;
+//
 //        for (Users user : users) {
 //            if (user.getTotalPoints() < previousTotalPoints) {
 //                currentPlace++;
@@ -252,78 +256,86 @@ public class TaskService {
 //
 //        return resultTableResponse;
 //    }
+public ResultTableResponse getResultTableResponse(Long session) {
+    return getResultTableResponse(session, null);  // Для всех участников
+}
 
-    public ResultTableResponse getResultTableResponse(Long session) {
-        ResultTableResponse resultTableResponse = new ResultTableResponse();
-        List<User> fullUsers = userRepository.findAllBySession(session);
-        int tasksCount = tasksRepository.findAllBySession(session).size();
-        List<Users> users = new ArrayList<>();
+public ResultTableResponse getResultTableResponse(Long session, Long userId) {
+    ResultTableResponse resultTableResponse = new ResultTableResponse();
+    List<User> fullUsers = userRepository.findAllBySession(session);
+    int tasksCount = tasksRepository.findAllBySession(session).size();
+    List<Users> users = new ArrayList<>();
 
-        for (User u : fullUsers) {
-            if (u.getRoles().contains(Role.ROLE_JUDGE) || u.getRoles().contains(Role.ROLE_ADMIN)) continue;
+    for (User u : fullUsers) {
+        if (u.getRoles().contains(Role.ROLE_JUDGE) || u.getRoles().contains(Role.ROLE_ADMIN)) continue;
 
-            Users userInfo = new Users();
-            userInfo.setName(
-                    (u.getName() == null || u.getSurname() == null) ? "Аноним" : u.getName() + " " + u.getSurname()
-            );
-            userInfo.setUsername(u.getUsername());
-            userInfo.setEmail(u.getEmail());
+        Users userInfo = new Users();
+        userInfo.setName(
+                (u.getName() == null || u.getSurname() == null) ? "Аноним" : u.getName() + " " + u.getSurname()
+        );
+        userInfo.setUsername(u.getUsername());
+        userInfo.setEmail(u.getEmail());
 
-            List<UserTasks> userTasks = userTasksRepository.findAllLatestEvaluatedTasksBySessionAndUserId(
-                    u.getSession(), u.getId()
-            );
-            Map<Long, UserTasks> taskMap = userTasks.stream()
-                    .collect(Collectors.toMap(UserTasks::getTaskNumber, Function.identity()));
+        List<UserTasks> userTasks = userTasksRepository.findAllLatestEvaluatedTasksBySessionAndUserId(
+                u.getSession(), u.getId()
+        );
+        Map<Long, UserTasks> taskMap = userTasks.stream()
+                .collect(Collectors.toMap(UserTasks::getTaskNumber, Function.identity()));
 
-            List<UserAnswers> userAnswers = new ArrayList<>();
-            int totalPoints = 0;
+        List<UserAnswers> userAnswers = new ArrayList<>();
+        int totalPoints = 0;
 
-            for (long taskNumber = 1; taskNumber <= tasksCount; taskNumber++) {
-                UserAnswers userAnswer = new UserAnswers();
-                userAnswer.setTaskNumber(taskNumber);
+        for (long taskNumber = 1; taskNumber <= tasksCount; taskNumber++) {
+            UserAnswers userAnswer = new UserAnswers();
+            userAnswer.setTaskNumber(taskNumber);
 
-                UserTasks task = taskMap.get(taskNumber);
-                if (task == null) {
-                    userAnswer.setAnswerStatus(AnswerStatus.NOT_SENT.name());
-                    userAnswer.setPoints(null);
+            UserTasks task = taskMap.get(taskNumber);
+            if (task == null) {
+                userAnswer.setAnswerStatus(AnswerStatus.NOT_SENT.name());
+                userAnswer.setPoints(null);
+            } else {
+                if (task.getState() == UserTaskState.ACCEPTED || task.getState() == UserTaskState.REJECTED) {
+                    userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
+                    userAnswer.setPoints(task.getPoints());
+                    totalPoints += task.getPoints() != null ? task.getPoints() : 0;
                 } else {
-                    if (task.getState() == UserTaskState.ACCEPTED || task.getState() == UserTaskState.REJECTED) {
-                        userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
-                        userAnswer.setPoints(task.getPoints());
-                        totalPoints += task.getPoints() != null ? task.getPoints() : 0;
-                    } else {
-                        userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
-                        userAnswer.setPoints(null);
-                    }
+                    userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
+                    userAnswer.setPoints(null);
                 }
-                userAnswers.add(userAnswer);
             }
+            userAnswers.add(userAnswer);
+        }
 
-            userInfo.setUserAnswers(userAnswers);
-            userInfo.setSolvedTasksCount(userTasks.size());
-            userInfo.setTotalPoints(totalPoints);
+        userInfo.setUserAnswers(userAnswers);
+        userInfo.setSolvedTasksCount(userTasks.size());
+        userInfo.setTotalPoints(totalPoints);
+
+        // Если запрашивается конкретный участник, добавляем только его
+        if (userId == null || u.getId().equals(userId)) {
             users.add(userInfo);
         }
-
-        // Сортировка по очкам
-        users.sort(Comparator.comparingInt(Users::getTotalPoints).reversed());
-
-        int currentPlace = 0;
-        int previousTotalPoints = Integer.MAX_VALUE;
-
-        for (Users user : users) {
-            if (user.getTotalPoints() < previousTotalPoints) {
-                currentPlace++;
-                previousTotalPoints = user.getTotalPoints();
-            }
-            user.setPlace(currentPlace);
-        }
-
-        resultTableResponse.setUsers(users);
-        resultTableResponse.setTasksCount(tasksCount);
-
-        return resultTableResponse;
     }
+
+    // Сортировка по очкам
+    users.sort(Comparator.comparingInt(Users::getTotalPoints).reversed());
+
+    // Рассчитываем места
+    int currentPlace = 0;
+    int previousTotalPoints = Integer.MAX_VALUE;
+
+    for (Users user : users) {
+        if (user.getTotalPoints() < previousTotalPoints) {
+            currentPlace++;
+            previousTotalPoints = user.getTotalPoints();
+        }
+        user.setPlace(currentPlace);
+    }
+
+    resultTableResponse.setUsers(users);
+    resultTableResponse.setTasksCount(tasksCount);
+
+    return resultTableResponse;
+}
 
 
 

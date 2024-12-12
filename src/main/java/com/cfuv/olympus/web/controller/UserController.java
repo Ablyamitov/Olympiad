@@ -148,10 +148,11 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
-    @GetMapping("/contest/user-problems/result/{session}")
-    public ResponseEntity<ResultTableResponse> getContestResultTableBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
+    @GetMapping("/contest/user-problems/result/{session}/{userId}")
+    public ResponseEntity<ResultTableResponse> getContestResultTableBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session,
+                                                                              @PathVariable @Min(value = 0, message = "User ID cannot be less than 0") Long userId) {
 
-        return ResponseEntity.ok(taskService.getResultTableResponse(session));
+        return ResponseEntity.ok(taskService.getResultTableResponse(session, userId));
 
     }
 
