@@ -39,6 +39,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
@@ -182,60 +183,62 @@ public class TaskService {
         };
     }
 
+
 //    public ResultTableResponse getResultTableResponse(Long session) {
 //        ResultTableResponse resultTableResponse = new ResultTableResponse();
 //        List<User> fullUsers = userRepository.findAllBySession(session);
 //        int tasksCount = tasksRepository.findAllBySession(session).size();
 //        List<Users> users = new ArrayList<>();
+//
 //        for (User u : fullUsers) {
 //            if (u.getRoles().contains(Role.ROLE_JUDGE) || u.getRoles().contains(Role.ROLE_ADMIN)) continue;
+//
 //            Users userInfo = new Users();
-//            if(u.getName()==null || u.getSurname()==null) userInfo.setName("Аноним");
-//            else userInfo.setName(u.getName() + " "  + u.getSurname());
+//            userInfo.setName((u.getName() == null || u.getSurname() == null) ? "Аноним" : u.getName() + " " + u.getSurname());
 //            userInfo.setUsername(u.getUsername());
 //            userInfo.setEmail(u.getEmail());
 //
 //            List<UserTasks> userTasks = userTasksRepository.findAllLatestTasksBySessionAndUserId(u.getSession(), u.getId());
-//            userTasks.sort(Comparator.comparing(UserTasks::getTaskNumber));
-//            List<UserAnswers> userAnswers = new ArrayList<>();
+//            Map<Long, UserTasks> taskMap = userTasks.stream()
+//                    .collect(Collectors.toMap(UserTasks::getTaskNumber, task -> task));
 //
+//            List<UserAnswers> userAnswers = new ArrayList<>();
 //            int totalPoints = 0;
-//            for (int taskNumber = 0; taskNumber < tasksCount; taskNumber++) {
+//
+//            // Проверяем по количеству задач в сессии
+//            for (int taskNumber = 1; taskNumber <= tasksCount; taskNumber++) {
 //                UserAnswers userAnswer = new UserAnswers();
-//                //что-то с балами
-//                //if (taskNumber + 1 != userTasks.get(taskNumber).getTaskNumber()) {
-//                if (userTasks.isEmpty() || taskNumber >= userTasks.size() || taskNumber + 1 != userTasks.get(taskNumber).getTaskNumber()) {
-//                    userAnswer.setTaskNumber((long) (taskNumber + 1));
+//                userAnswer.setTaskNumber((long) taskNumber);
+//
+//                UserTasks task = taskMap.get((long) taskNumber);
+//                if (task == null) {
 //                    userAnswer.setAnswerStatus(AnswerStatus.NOT_SENT.name());
+//                    userAnswer.setPoints(0);
+//                } else if (task.getState() == UserTaskState.NOT_EVALUATED) {
+//                    userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
 //                    userAnswer.setPoints(null);
 //                } else {
-//                    userAnswer.setTaskNumber(userTasks.get(taskNumber).getTaskNumber());
-//                    if (userTasks.get(taskNumber).getState() == UserTaskState.NOT_EVALUATED) {
-//                        userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
-//                        userAnswer.setPoints(null);
-//                    } else {
-//                        userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
-//                        userAnswer.setPoints(userTasks.get(taskNumber).getPoints());
-//                        totalPoints += userAnswer.getPoints();
-//                    }
+//                    userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
+//                    userAnswer.setPoints(task.getPoints());
+//                    totalPoints += task.getPoints();
 //                }
 //
 //                userAnswers.add(userAnswer);
 //            }
+//
 //            userInfo.setUserAnswers(userAnswers);
-//
-//
 //            userInfo.setSolvedTasksCount(userTasks.size());
 //            userInfo.setTotalPoints(totalPoints);
 //
 //            users.add(userInfo);
 //        }
-//        /**/
+//
+//        // Сортировка пользователей по набранным очкам
 //        users.sort(Comparator.comparingInt(Users::getTotalPoints).reversed());
 //
+//        // Расстановка мест
 //        int currentPlace = 0;
 //        int previousTotalPoints = Integer.MAX_VALUE;
-//
 //        for (Users user : users) {
 //            if (user.getTotalPoints() < previousTotalPoints) {
 //                currentPlace++;
@@ -244,14 +247,12 @@ public class TaskService {
 //            user.setPlace(currentPlace);
 //        }
 //
-//
-//        /**/
-//
 //        resultTableResponse.setUsers(users);
 //        resultTableResponse.setTasksCount(tasksCount);
 //
 //        return resultTableResponse;
 //    }
+
     public ResultTableResponse getResultTableResponse(Long session) {
         ResultTableResponse resultTableResponse = new ResultTableResponse();
         List<User> fullUsers = userRepository.findAllBySession(session);
@@ -262,51 +263,54 @@ public class TaskService {
             if (u.getRoles().contains(Role.ROLE_JUDGE) || u.getRoles().contains(Role.ROLE_ADMIN)) continue;
 
             Users userInfo = new Users();
-            userInfo.setName((u.getName() == null || u.getSurname() == null) ? "Аноним" : u.getName() + " " + u.getSurname());
+            userInfo.setName(
+                    (u.getName() == null || u.getSurname() == null) ? "Аноним" : u.getName() + " " + u.getSurname()
+            );
             userInfo.setUsername(u.getUsername());
             userInfo.setEmail(u.getEmail());
 
-            List<UserTasks> userTasks = userTasksRepository.findAllLatestTasksBySessionAndUserId(u.getSession(), u.getId());
+            List<UserTasks> userTasks = userTasksRepository.findAllLatestEvaluatedTasksBySessionAndUserId(
+                    u.getSession(), u.getId()
+            );
             Map<Long, UserTasks> taskMap = userTasks.stream()
-                    .collect(Collectors.toMap(UserTasks::getTaskNumber, task -> task));
+                    .collect(Collectors.toMap(UserTasks::getTaskNumber, Function.identity()));
 
             List<UserAnswers> userAnswers = new ArrayList<>();
             int totalPoints = 0;
 
-            // Проверяем по количеству задач в сессии
-            for (int taskNumber = 1; taskNumber <= tasksCount; taskNumber++) {
+            for (long taskNumber = 1; taskNumber <= tasksCount; taskNumber++) {
                 UserAnswers userAnswer = new UserAnswers();
-                userAnswer.setTaskNumber((long) taskNumber);
+                userAnswer.setTaskNumber(taskNumber);
 
-                UserTasks task = taskMap.get((long) taskNumber);
+                UserTasks task = taskMap.get(taskNumber);
                 if (task == null) {
                     userAnswer.setAnswerStatus(AnswerStatus.NOT_SENT.name());
-                    userAnswer.setPoints(0);
-                } else if (task.getState() == UserTaskState.NOT_EVALUATED) {
-                    userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
                     userAnswer.setPoints(null);
                 } else {
-                    userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
-                    userAnswer.setPoints(task.getPoints());
-                    totalPoints += task.getPoints();
+                    if (task.getState() == UserTaskState.ACCEPTED || task.getState() == UserTaskState.REJECTED) {
+                        userAnswer.setAnswerStatus(AnswerStatus.CHECKED.name());
+                        userAnswer.setPoints(task.getPoints());
+                        totalPoints += task.getPoints() != null ? task.getPoints() : 0;
+                    } else {
+                        userAnswer.setAnswerStatus(AnswerStatus.IN_PROGRESS.name());
+                        userAnswer.setPoints(null);
+                    }
                 }
-
                 userAnswers.add(userAnswer);
             }
 
             userInfo.setUserAnswers(userAnswers);
             userInfo.setSolvedTasksCount(userTasks.size());
             userInfo.setTotalPoints(totalPoints);
-
             users.add(userInfo);
         }
 
-        // Сортировка пользователей по набранным очкам
+        // Сортировка по очкам
         users.sort(Comparator.comparingInt(Users::getTotalPoints).reversed());
 
-        // Расстановка мест
         int currentPlace = 0;
         int previousTotalPoints = Integer.MAX_VALUE;
+
         for (Users user : users) {
             if (user.getTotalPoints() < previousTotalPoints) {
                 currentPlace++;
@@ -320,6 +324,7 @@ public class TaskService {
 
         return resultTableResponse;
     }
+
 
 
 

@@ -22,6 +22,21 @@ public interface UserTasksRepository extends JpaRepository<UserTasks,Long> {
     @Query(value = "SELECT * FROM user_tasks ut1 WHERE ut1.id = (SELECT ut2.id FROM user_tasks ut2 WHERE ut2.tasknumber = ut1.tasknumber AND ut2.session = :session AND ut2.user_id = :userId ORDER BY ut2.id DESC LIMIT 1)", nativeQuery = true)
     List<UserTasks> findAllLatestTasksBySessionAndUserId(@Param("session") Long session, @Param("userId") Long userId);
 
+    @Query(value = """
+    SELECT * FROM user_tasks ut1 
+    WHERE ut1.id = (
+        SELECT ut2.id FROM user_tasks ut2 
+        WHERE ut2.tasknumber = ut1.tasknumber 
+          AND ut2.session = :session 
+          AND ut2.user_id = :userId 
+          AND ut2.state != 'NOT_EVALUATED' 
+        ORDER BY ut2.id DESC LIMIT 1
+    )
+""", nativeQuery = true)
+    List<UserTasks> findAllLatestEvaluatedTasksBySessionAndUserId(
+            @Param("session") Long session,
+            @Param("userId") Long userId
+    );
     Optional<UserTasks> findFirstBySessionOrderByIdDesc(Long session);
 
 
