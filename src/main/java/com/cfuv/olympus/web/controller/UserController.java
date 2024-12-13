@@ -6,6 +6,7 @@ import com.cfuv.olympus.service.ContestService;
 import com.cfuv.olympus.service.TaskService;
 import com.cfuv.olympus.service.UserService;
 import com.cfuv.olympus.web.dto.contest.JudgeTable.JudgeTableResponse;
+import com.cfuv.olympus.web.dto.contest.ResultTable.ResultTableRequest;
 import com.cfuv.olympus.web.dto.contest.ResultTable.ResultTableResponse;
 import com.cfuv.olympus.web.dto.task.Download.DownloadUserTaskRequest;
 import com.cfuv.olympus.web.dto.user.UserInfo.ChangeUserInfoResponse;
@@ -148,10 +149,10 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
-    @GetMapping("/contest/user-problems/result/{session}")
-    public ResponseEntity<ResultTableResponse> getContestResultTableBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
+    @PostMapping("/contest/user-problems/result/{userId}")
+    public ResponseEntity<ResultTableResponse> getContestResultTableBySession(@PathVariable @Min(value = 0, message = "User ID must be at least 0") Long userId,@RequestBody final ResultTableRequest resultTableRequest) {
 
-        return ResponseEntity.ok(taskService.getResultTableResponse(session));
+        return ResponseEntity.ok(taskService.getResultTableResponse(resultTableRequest.getSession(), userId));
 
     }
 

@@ -29,6 +29,6 @@ public class JudgeTableResponse {
     private String fileName;
 
 
-    private String state;
+    private Integer state;
 
 }

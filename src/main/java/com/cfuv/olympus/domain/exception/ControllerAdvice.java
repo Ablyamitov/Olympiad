@@ -75,13 +75,13 @@ public class ControllerAdvice {
        // return ResponseUtil.createResponse(null, false, errors);
     }
 
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<ErrorMessage> handleIoException(IOException exception) {
-        log.error(exception.getMessage(), exception);
-        return ResponseEntity
-                .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(new ErrorMessage(exception.getMessage()));
-    }
+//    @ExceptionHandler(IOException.class)
+//    public ResponseEntity<ErrorMessage> handleIoException(IOException exception) {
+//        log.error(exception.getMessage(), exception);
+//        return ResponseEntity
+//                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+//                .body(new ErrorMessage(exception.getMessage()));
+//    }
 
 //    @ExceptionHandler(MethodArgumentNotValidException.class)
 //    public ResponseEntity<ErrorMessage> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {

@@ -175,11 +175,11 @@ public class TaskService {
         return jtr;
     }
 
-    private String getLocalizedState(UserTaskState state) {
+    private int getLocalizedState(UserTaskState state) {
         return switch (state) {
-            case NOT_EVALUATED -> "Не оценено";
-            case REJECTED -> "Отклонено";
-            case ACCEPTED -> "Принято";
+            case NOT_EVALUATED -> 1;
+            case REJECTED -> 2;
+            case ACCEPTED -> 3;
         };
     }
 

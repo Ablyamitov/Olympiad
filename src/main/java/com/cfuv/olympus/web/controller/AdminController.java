@@ -17,6 +17,7 @@ import com.cfuv.olympus.web.dto.contest.GetAllContests.GetAllContestsResponse;
 import com.cfuv.olympus.web.dto.contest.GetAllContestsContainingName.GetAllContestsContainingNameRequest;
 import com.cfuv.olympus.web.dto.contest.GetStartAndEndContestTime.GetStartAndEndContestTimeResponse;
 import com.cfuv.olympus.web.dto.contest.JudgeTable.JudgeTableResponse;
+import com.cfuv.olympus.web.dto.contest.ResultTable.ResultTableRequest;
 import com.cfuv.olympus.web.dto.contest.ResultTable.ResultTableResponse;
 import com.cfuv.olympus.web.dto.task.Download.DownloadUserTaskRequest;
 import com.cfuv.olympus.web.dto.contest.CreateContest.ContestAndFileResponse;
@@ -159,10 +160,10 @@ public class AdminController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved")
     })
-    @GetMapping("/contest/user-problems/result/{session}")
-    public ResponseEntity<ResultTableResponse> getContestResultTableBySession(@PathVariable @Min(value = 0, message = "Session cannot be less than 0") Long session) {
+    @PostMapping("/contest/user-problems/result")
+    public ResponseEntity<ResultTableResponse> getContestResultTableBySession(@RequestBody ResultTableRequest resultTableRequest) {
 
-        return ResponseEntity.ok(taskService.getResultTableResponse(session));
+        return ResponseEntity.ok(taskService.getResultTableResponse(resultTableRequest.getSession()));
 
     }
 
@@ -234,6 +235,39 @@ public class AdminController {
 
 
 
+//    @CheckContestState
+//    @Operation(summary = "Add problems", description = "Add problems to the contest")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Successfully retrieved"),
+//            @ApiResponse(responseCode = "404", description = "Bad request - Contest does not exists",
+//                    content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
+//    })
+//    @PostMapping(value = "/addProblems", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
+//    public ResponseEntity<List<Tasks>> addProblems(
+//            @Parameter(description = "Сессия", example = "1") @RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
+//            @Parameter(description = "Имя html", example = "Сортировка.html") @RequestParam(value = "htmlName", required = false) String htmlName,
+//            @Parameter(description = "Содержимое html", example = "<!DOCTYPE html>") @RequestParam(value = "htmlContent") String htmlContent,
+//            @Parameter(description = "Название zip файла", example = "Work1.zip") @RequestParam(value = "name", required = false) String name,
+//            @Parameter(description = "Zip файл с заданием") @RequestParam(value = "problem", required = false) MultipartFile file,
+//            @Parameter(description = "Zip файл с картинками") @RequestParam(value = "images", required = false) MultipartFile images,
+//            @Parameter(description = "Макс. кол-во очков", example = "20") @RequestParam("points") @Min(value = 0, message = "Session must be at least 0") int points
+//
+//    ) throws IOException {
+//        AddProblemRequest addProblemRequest = new AddProblemRequest();
+//        addProblemRequest.setSession(session);
+//        addProblemRequest.setHtmlContent(htmlContent);
+//        addProblemRequest.setName(name);
+//        addProblemRequest.setProblem(file);
+//        addProblemRequest.setImages(images);
+//        addProblemRequest.setPoints(points);
+//        addProblemRequest.setHtmlName(htmlName);
+//        return ResponseEntity.ok(contestService
+//                .addProblems(addProblemRequest));
+//
+//    }
+
+
+
     @CheckContestState
     @Operation(summary = "Add problems", description = "Add problems to the contest")
     @ApiResponses(value = {
@@ -242,7 +276,7 @@ public class AdminController {
                     content = @Content(schema = @Schema(implementation = ErrorMessage.class)))
     })
     @PostMapping(value = "/addProblems", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
-    public ResponseEntity<List<Tasks>> addProblems(
+    public ResponseEntity<CustomResponse<List<Tasks>>> addProblems(
             @Parameter(description = "Сессия", example = "1") @RequestParam("session") @Min(value = 0, message = "Session must be at least 0") Long session,
             @Parameter(description = "Имя html", example = "Сортировка.html") @RequestParam(value = "htmlName", required = false) String htmlName,
             @Parameter(description = "Содержимое html", example = "<!DOCTYPE html>") @RequestParam(value = "htmlContent") String htmlContent,
@@ -260,9 +294,14 @@ public class AdminController {
         addProblemRequest.setImages(images);
         addProblemRequest.setPoints(points);
         addProblemRequest.setHtmlName(htmlName);
-        return ResponseEntity.ok(contestService
-                .addProblems(addProblemRequest));
+//        return ResponseEntity.ok(contestService
+//                .addProblems(addProblemRequest));
+        return ResponseUtil.createResponse(contestService
+                .addProblems(addProblemRequest), true, null);
+
     }
+
+
 
 
     @Operation(summary = "Get tasks file content", description = "Returns a file content contest task for admin from localstorage")
