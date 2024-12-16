@@ -300,8 +300,8 @@ public class ContestService {
                         contest.getSession(),
                         contest.getState(),
                         contest.getDuration(),
-                        (contest.getStartTime() != null) ? contest.getStartTime().format(formatter) : null,
-                        (contest.getEndTime() != null) ? contest.getEndTime().format(formatter) : null))
+                        (contest.getStartTime() != null) ? contest.getStartTime().plusHours(3).format(formatter) : null,
+                        (contest.getEndTime() != null) ? contest.getEndTime().plusHours(3).format(formatter) : null))
                 .collect(Collectors.toList());
 
         Long count = contestRepository.count();
